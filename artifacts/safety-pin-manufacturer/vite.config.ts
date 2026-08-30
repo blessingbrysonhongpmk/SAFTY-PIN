@@ -36,6 +36,9 @@ export default defineConfig({
     fs: {
       strict: true,
     },
+    watch: {
+      ignored: ['**/dist/**', '**/.git/**'],
+    },
   },
   preview: {
     port,

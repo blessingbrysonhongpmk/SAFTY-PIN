@@ -1,14 +1,13 @@
 {
-  "name": "workspace",
-  "version": "0.0.0",
+  "name": "holdfast-safety-pin-platform",
+  "version": "1.0.0",
   "license": "MIT",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "pnpm --filter @workspace/safety-pin-manufacturer run dev",
-    "dev:api": "pnpm --filter @workspace/api-server run dev",
-    "build": "pnpm run typecheck && pnpm -r --if-present run build",
-    "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm --filter \"@workspace/*\" --if-present run typecheck"
+    "build": "pnpm --filter @workspace/safety-pin-manufacturer run build",
+    "serve": "pnpm --filter @workspace/safety-pin-manufacturer run serve",
+    "typecheck": "tsc --build && pnpm --filter \"@workspace/*\" --if-present run typecheck"
   },
   "private": true,
   "devDependencies": {

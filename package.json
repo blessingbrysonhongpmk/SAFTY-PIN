@@ -2,6 +2,7 @@
   "name": "workspace",
   "version": "0.0.0",
   "license": "MIT",
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "pnpm --filter @workspace/safety-pin-manufacturer run dev",
     "dev:api": "pnpm --filter @workspace/api-server run dev",
@@ -10,9 +11,6 @@
     "typecheck": "pnpm run typecheck:libs && pnpm --filter \"@workspace/*\" --if-present run typecheck"
   },
   "private": true,
-  "dependencies": {
-    "@replit/connectors-sdk": "^0.4.1"
-  },
   "devDependencies": {
     "prettier": "^3.9.6",
     "typescript": "~5.9.3"

@@ -26,7 +26,7 @@ function SiteShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   return (
     <div className="noise min-h-[100dvh] bg-background relative selection:bg-accent selection:text-accent-foreground">
-      <FallingPinsBackground zIndex={20} initialDensity="MEDIUM" initialTone="ALL" showControls={true} />
+      <FallingPinsBackground zIndex={0} density="SUBTLE" />
       <header className="sticky top-0 z-40 border-b border-foreground/10 bg-background/90 backdrop-blur-md">
         <div className="mx-auto flex h-[74px] max-w-[1440px] items-center justify-between px-5 md:px-10">
           <Link href="/" onClick={() => setMenuOpen(false)} className="group flex items-center gap-3" data-testid="link-logo">

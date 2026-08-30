@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Link, Route, Switch, Router as WouterRouter, useLocation, useParams } from 'wouter';
 import { ArrowRight, ArrowUpRight, Check, ChevronDown, ClipboardCheck, Factory, Menu, Search, ShieldCheck, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { FallingPinsBackground } from '@/components/FallingPinsBackground';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
@@ -24,7 +25,8 @@ function SiteShell({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [location] = useLocation();
   return (
-    <div className="noise min-h-[100dvh] bg-background">
+    <div className="noise min-h-[100dvh] bg-background relative selection:bg-accent selection:text-accent-foreground">
+      <FallingPinsBackground zIndex={20} initialDensity="MEDIUM" initialTone="ALL" showControls={true} />
       <header className="sticky top-0 z-40 border-b border-foreground/10 bg-background/90 backdrop-blur-md">
         <div className="mx-auto flex h-[74px] max-w-[1440px] items-center justify-between px-5 md:px-10">
           <Link href="/" onClick={() => setMenuOpen(false)} className="group flex items-center gap-3" data-testid="link-logo">

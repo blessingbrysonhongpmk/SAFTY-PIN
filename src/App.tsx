@@ -17,8 +17,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { getProduct, products, type Product, type PackOption } from './data/products';
-import heroImage from '../attached_assets/safety-pin-hero.png';
-import formingImage from '../attached_assets/forming-line.png';
+import heroImage from '@assets/safety-pin-hero.png';
+import formingImage from '@assets/forming-line.png';
 
 const queryClient = new QueryClient();
 

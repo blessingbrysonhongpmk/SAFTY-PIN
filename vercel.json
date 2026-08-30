@@ -1,8 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm run build",
-  "outputDirectory": "artifacts/safety-pin-manufacturer/dist/public",
-  "framework": "vite",
   "rewrites": [
     {
       "source": "/(.*)",

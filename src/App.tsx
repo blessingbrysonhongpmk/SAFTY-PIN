@@ -1,19 +1,16 @@
-import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useMemo, useState, useRef, type FormEvent, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Link, Route, Switch, Router as WouterRouter, useLocation, useParams } from 'wouter';
 import {
-  ArrowRight, ArrowUpRight, Check, ChevronDown, ClipboardCheck, Factory, Menu,
-  Search, ShieldCheck, SlidersHorizontal, Sparkles, X, ShoppingBag, Box, Truck,
-  Star, CheckCircle2, Sliders, Layers, Award, Info, FileText, Plus, Minus,
-  MessageSquare, Phone, Mail, MapPin, Globe, Download, Eye, ExternalLink, RefreshCw
+  ArrowRight, ArrowUpRight, Check, ChevronDown, Factory, Menu,
+  Search, ShieldCheck, Sparkles, X, ShoppingBag, Box, Truck,
+  CheckCircle2, Plus, Minus, MessageSquare, Phone, Mail, MapPin,
+  Building2, Scissors, Shirt, ShoppingCart, Store, PackageCheck,
+  Award, HelpCircle, Layers, Tag, ExternalLink, SlidersHorizontal
 } from 'lucide-react';
 import { ErrorBoundary } from '@/components/error-boundary';
-import { FallingPinsBackground } from '@/components/FallingPinsBackground';
-import { CartProvider, useCart, type Currency } from './context/CartContext';
+import { CartProvider, useCart } from './context/CartContext';
 import { CartDrawer } from './components/CartDrawer';
-import { CustomPinConfigurator } from './components/CustomPinConfigurator';
-import { Checkout } from './pages/Checkout';
-import { SampleKit } from './pages/SampleKit';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
@@ -21,100 +18,99 @@ import { getProduct, products, INDIAN_SIZE_CHART, PACKAGING_OPTIONS, type Produc
 
 const queryClient = new QueryClient();
 
-const navItems = [
-  { href: '/products', label: 'Product Catalogue' },
-  { href: '/size-chart', label: 'Indian Size Chart' },
-  { href: '/custom-quote', label: 'Bulk RFQ & Pricing' },
-  { href: '/packaging', label: 'Ring Bunches & OEM' },
-  { href: '/manufacturing', label: 'Kanyakumari Plant' },
-  { href: '/quality', label: 'Quality & ISO' },
-  { href: '/samples', label: 'Free Sample Box' },
-  { href: '/contact', label: 'Contact & Export Desk' },
+const KANYAKUMARI_AREAS = [
+  'Nagercoil',
+  'Kanyakumari',
+  'Marthandam',
+  'Thuckalay',
+  'Colachel',
+  'Karungal',
+  'Kuzhithurai',
+  'Suchindram',
+  'Aralvaimozhi',
+  'Padmanabhapuram',
+  'Kaliyakkavilai',
+  'Kulasekharam',
+  'Monday Market',
+  'Eraniel',
+  'Agasteeswaram',
+  'Killiyoor',
+  'Other Kanyakumari Area',
 ];
 
-function SiteShell({ children }: { children: ReactNode }) {
+function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [location] = useLocation();
-  const { itemCount, setIsCartOpen, currency, setCurrency } = useCart();
+  const { itemCount, setIsCartOpen, formatPrice, subtotal } = useCart();
+
+  const navLinks = [
+    { href: '/', label: 'Wholesale Shop' },
+    { href: '/products', label: 'All Products' },
+    { href: '/sizes', label: 'Sizes & Prices' },
+    { href: '/delivery', label: 'Kanyakumari Delivery' },
+    { href: '/for-businesses', label: 'For Shops & Tailors' },
+    { href: '/contact', label: 'Contact Desk' },
+  ];
 
   return (
-    <div className="min-h-[100dvh] bg-background relative text-foreground flex flex-col justify-between selection:bg-accent selection:text-accent-foreground">
-      <FallingPinsBackground />
-      <CartDrawer />
-
-      {/* Top Utility Announcement Bar */}
-      <div className="bg-sidebar text-sidebar-foreground px-4 py-2 text-[11px] font-mono border-b border-sidebar-foreground/15">
-        <div className="mx-auto max-w-[1440px] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5 text-accent font-bold">
-              <span className="text-base leading-none">🇮🇳</span> Make in India • Kanyakumari, Tamil Nadu Precision Mill
-            </span>
-            <span className="hidden sm:inline text-sidebar-foreground/40">•</span>
-            <span className="hidden sm:inline text-sidebar-foreground/80">
-              Supplying Tirupur Hub & Exporting via Tuticorin Port (INTUT1)
-            </span>
+    <>
+      {/* Top Local Delivery Utility Bar */}
+      <div className="bg-slate-900 text-slate-200 px-4 py-2 text-xs font-mono border-b border-slate-800">
+        <div className="mx-auto max-w-[1360px] flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-semibold text-white">Kanyakumari District Wholesale Desk:</span>
+            <span className="text-slate-300 hidden sm:inline">Direct supply to shops, tailors, textile & garment units</span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 text-xs">
             <a
-              href="https://wa.me/919876543210?text=Hello%20Kanyakumari%20Safety%20Pins%20Tamil%20Nadu%2C%20I%20would%20like%20to%20inquire%20about%20safety%20pins%20wholesale%20rates%20in%20Rupees."
+              href="tel:+919876543210"
+              className="text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors"
+            >
+              <Phone size={13} className="text-orange-400" />
+              <span>+91 98765 43210</span>
+            </a>
+            <span className="text-slate-700 hidden sm:inline">|</span>
+            <a
+              href="https://wa.me/919876543210?text=Hello%20Kanyakumari%20Safety%20Pins%2C%20I%20want%20to%20place%20a%20wholesale%20order%20for%20my%20shop."
               target="_blank"
               rel="noreferrer"
               className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1 font-bold"
             >
               <MessageSquare size={13} />
-              <span className="hidden md:inline">Tamil Nadu Helpline:</span> +91-98765-43210
+              <span>WhatsApp Order</span>
             </a>
-
-            <span className="text-sidebar-foreground/40">•</span>
-
-            {/* Currency Selector */}
-            <div className="flex items-center gap-1">
-              <span className="text-sidebar-foreground/60 hidden sm:inline">CURRENCY:</span>
-              {(['INR', 'USD', 'EUR', 'GBP'] as Currency[]).map((c) => (
-                <button
-                  type="button"
-                  key={c}
-                  onClick={() => setCurrency(c)}
-                  className={`px-1.5 py-0.5 rounded-xs font-bold transition-all ${
-                    currency === c
-                      ? 'bg-accent text-accent-foreground shadow-xs'
-                      : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
-                  }`}
-                >
-                  {c === 'INR' ? 'INR (₹)' : c}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Header */}
-      <header className="sticky top-0 z-40 border-b border-foreground/10 bg-background/95 backdrop-blur-md">
-        <div className="mx-auto flex h-[74px] max-w-[1440px] items-center justify-between px-4 md:px-8">
-          <Link href="/" onClick={() => setMenuOpen(false)} className="group flex items-center gap-3" data-testid="link-logo">
-            <div className="grid h-10 w-10 place-items-center bg-sidebar text-white rounded-xs border border-sidebar-foreground/30 font-display font-extrabold text-lg">
+      {/* Main Commerce Header */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+        <div className="mx-auto flex h-[68px] max-w-[1360px] items-center justify-between px-4 sm:px-6">
+          {/* Brand Logo */}
+          <Link href="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center bg-orange-600 text-white rounded-md font-display font-black text-lg shadow-xs">
               KK
             </div>
             <div>
-              <div className="font-display text-base font-extrabold tracking-tight flex items-center gap-1.5">
-                KANYAKUMARI SAFETY PINS <span className="text-[10px] bg-accent/20 text-accent font-mono px-1.5 py-0.5 rounded-xs font-bold">TAMIL NADU</span>
+              <div className="font-display text-base font-extrabold tracking-tight text-slate-900 leading-tight">
+                KANYAKUMARI SAFETY PINS
               </div>
-              <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
-                Precision Pin Manufacturer & Exporter
+              <p className="font-mono text-[10px] text-orange-600 font-bold tracking-wider uppercase">
+                B2B Wholesale Ordering Platform
               </p>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden items-center gap-6 lg:flex">
-            {navItems.slice(0, 5).map((item) => (
+            {navLinks.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`text-xs font-bold tracking-wider uppercase transition-colors hover:text-accent ${
-                  location === item.href ? 'text-accent border-b-2 border-accent pb-1' : 'text-foreground/80'
+                className={`text-xs font-bold uppercase tracking-wider transition-colors hover:text-orange-600 ${
+                  location === item.href ? 'text-orange-600 border-b-2 border-orange-600 pb-1' : 'text-slate-700'
                 }`}
               >
                 {item.label}
@@ -122,279 +118,474 @@ function SiteShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
 
+          {/* Action CTAs */}
           <div className="flex items-center gap-3">
-            {/* Cart Trigger */}
             <button
               type="button"
               onClick={() => setIsCartOpen(true)}
-              className="relative flex items-center gap-2 border border-foreground/20 bg-card px-3.5 py-2 text-xs font-mono font-bold hover:border-accent hover:text-accent transition-colors rounded-xs shadow-xs"
-              aria-label="Open order cart"
+              className="relative flex items-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-md text-xs font-bold transition-all shadow-xs"
+              aria-label="Open wholesale cart"
             >
-              <ShoppingBag size={16} />
-              <span className="hidden sm:inline">CART / RFQ</span>
-              <span className="grid h-5 w-5 place-items-center bg-accent text-accent-foreground text-[10px] font-bold rounded-full">
+              <ShoppingBag size={16} className="text-orange-400" />
+              <span>ORDER CART</span>
+              <span className="grid h-5 min-w-[20px] px-1 place-items-center bg-orange-600 text-white text-[11px] font-bold rounded-full">
                 {itemCount}
               </span>
             </button>
-
-            {/* Quick RFQ Action */}
-            <Link
-              href="/custom-quote"
-              className="hidden items-center gap-2 bg-accent hover:bg-accent/90 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-accent-foreground transition-transform hover:-translate-y-0.5 sm:flex rounded-xs shadow-sm"
-            >
-              Instant RFQ <ArrowUpRight size={14} />
-            </Link>
 
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}
-              className="grid h-10 w-10 place-items-center border border-foreground/20 lg:hidden rounded-xs"
+              className="grid h-10 w-10 place-items-center border border-slate-300 rounded-md text-slate-700 lg:hidden"
             >
               {menuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation Dropdown */}
+        {/* Mobile Dropdown Menu */}
         {menuOpen && (
-          <div className="border-t border-foreground/10 bg-background px-5 py-5 lg:hidden animate-in slide-in-from-top-2 duration-200">
-            <nav className="flex flex-col gap-1">
-              {navItems.map((item) => (
+          <div className="border-t border-slate-200 bg-white px-4 py-4 lg:hidden animate-in slide-in-from-top-2 duration-200 shadow-lg">
+            <nav className="flex flex-col gap-1 text-sm font-medium">
+              {navLinks.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setMenuOpen(false)}
-                  className="border-b border-foreground/10 py-3 font-display text-base flex items-center justify-between"
+                  className="flex items-center justify-between py-2.5 border-b border-slate-100 text-slate-800 hover:text-orange-600"
                 >
                   <span>{item.label}</span>
-                  <ArrowUpRight className="text-accent" size={16} />
+                  <ArrowRight size={14} className="text-slate-400" />
                 </Link>
               ))}
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <Link
-                  href="/custom-quote"
-                  onClick={() => setMenuOpen(false)}
-                  className="bg-accent px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-accent-foreground rounded-xs"
+              <div className="pt-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setIsCartOpen(true);
+                  }}
+                  className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-md font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2"
                 >
-                  Bulk RFQ
-                </Link>
-                <Link
-                  href="/samples"
-                  onClick={() => setMenuOpen(false)}
-                  className="border border-foreground/20 px-4 py-3 text-center text-xs font-bold uppercase tracking-wider rounded-xs"
-                >
-                  Free Samples
-                </Link>
+                  <ShoppingBag size={16} />
+                  <span>View Wholesale Order ({itemCount} items)</span>
+                </button>
               </div>
             </nav>
           </div>
         )}
       </header>
-
-      <main className="relative z-10 flex-1">{children}</main>
-      <Footer />
-    </div>
+    </>
   );
 }
 
-function Footer() {
+function SiteFooter() {
   return (
-    <footer className="bg-sidebar px-5 py-12 text-sidebar-foreground md:px-10 md:py-16 border-t border-sidebar-foreground/15 mt-20">
-      <div className="mx-auto max-w-[1440px]">
-        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
+    <footer className="bg-slate-900 text-slate-300 pt-14 pb-24 md:pb-14 border-t border-slate-800 mt-20">
+      <div className="mx-auto max-w-[1360px] px-4 sm:px-6">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="mb-4 flex items-center gap-3">
-              <div className="grid h-9 w-9 place-items-center bg-accent text-accent-foreground font-display font-black text-base rounded-xs">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="grid h-9 w-9 place-items-center bg-orange-600 text-white rounded-md font-display font-extrabold text-base">
                 KK
               </div>
-              <span className="font-display text-base font-extrabold tracking-tight">
-                KANYAKUMARI SAFETY PINS (TAMIL NADU)
+              <span className="font-display text-base font-extrabold text-white">
+                KANYAKUMARI SAFETY PINS
               </span>
             </div>
-            <p className="max-w-sm text-xs leading-6 text-sidebar-foreground/75">
-              Manufacturer & global exporter of high-precision steel, solid brass, pear bulb, and bunched ring safety pins from Kanyakumari District, Tamil Nadu, India. Supplying Tirupur knitwear, dry cleaners, and global garment brands.
+            <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+              Dedicated B2B Wholesale Safety Pin supplier for retail shops, tailoring ateliers, garment units, and textile stores across Kanyakumari District, Tamil Nadu.
             </p>
-            <div className="mt-5 flex flex-wrap gap-2 text-[10px] font-mono text-accent">
-              <span className="border border-sidebar-foreground/20 px-2 py-1 bg-sidebar-foreground/5">🇮🇳 MADE IN TAMIL NADU</span>
-              <span className="border border-sidebar-foreground/20 px-2 py-1 bg-sidebar-foreground/5">ISO 9001:2015</span>
-              <span className="border border-sidebar-foreground/20 px-2 py-1 bg-sidebar-foreground/5">TUTICORIN PORT (INTUT1)</span>
-              <span className="border border-sidebar-foreground/20 px-2 py-1 bg-sidebar-foreground/5">OEKO-TEX 100</span>
+            <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-mono text-orange-400">
+              <span className="bg-slate-800 px-2 py-1 rounded-sm border border-slate-700">Kanyakumari District</span>
+              <span className="bg-slate-800 px-2 py-1 rounded-sm border border-slate-700">Direct Mill Rates</span>
             </div>
           </div>
 
           <div>
-            <p className="eyebrow mb-4 text-accent font-bold">Product Categories</p>
-            <ul className="space-y-2.5 text-xs text-sidebar-foreground/80">
-              <li><Link href="/products" className="hover:text-accent transition-colors">Standard Steel Safety Pins</Link></li>
-              <li><Link href="/products" className="hover:text-accent transition-colors">Pure Brass Golden Pins (100% Rust-Proof)</Link></li>
-              <li><Link href="/products" className="hover:text-accent transition-colors">Bunched Ring Packs (12/24 Pins on Master)</Link></li>
-              <li><Link href="/products" className="hover:text-accent transition-colors">Pear / Gourd / Bulb Hangtag Pins</Link></li>
-              <li><Link href="/products" className="hover:text-accent transition-colors">Coil-less Anti-Snag Silk Pins</Link></li>
-              <li><Link href="/products" className="hover:text-accent transition-colors">Heavy-Duty Industrial Laundry Pins</Link></li>
-              <li><Link href="/products" className="hover:text-accent transition-colors">Marine & Surgical 316 Stainless</Link></li>
+            <h4 className="text-xs font-mono uppercase tracking-wider font-bold text-white mb-3">
+              Wholesale Products
+            </h4>
+            <ul className="space-y-2 text-xs text-slate-400">
+              <li><Link href="/products" className="hover:text-white transition-colors">Standard Nickel Safety Pins (#000 - #5)</Link></li>
+              <li><Link href="/products" className="hover:text-white transition-colors">Pure Brass Golden Pins (100% Rustproof)</Link></li>
+              <li><Link href="/products" className="hover:text-white transition-colors">Bunched Ring Packs (12/24 Pins on Master)</Link></li>
+              <li><Link href="/products" className="hover:text-white transition-colors">Pear / Bulb Hangtag Pins</Link></li>
+              <li><Link href="/products" className="hover:text-white transition-colors">Master Tailor Assorted Boxes</Link></li>
+              <li><Link href="/products" className="hover:text-white transition-colors">Heavy-Duty Industrial Laundry Pins</Link></li>
             </ul>
           </div>
 
           <div>
-            <p className="eyebrow mb-4 text-accent font-bold">Quick Technical Links</p>
-            <ul className="space-y-2.5 text-xs text-sidebar-foreground/80">
-              <li><Link href="/size-chart" className="hover:text-accent transition-colors">Indian Standard Size Chart (#000 - #6)</Link></li>
-              <li><Link href="/custom-quote" className="hover:text-accent transition-colors">Bulk RFQ & Cost Estimator (₹ INR)</Link></li>
-              <li><Link href="/packaging" className="hover:text-accent transition-colors">Ring Bunches & OEM Packaging</Link></li>
-              <li><Link href="/samples" className="hover:text-accent transition-colors">Order Free 12-Size Sample Box</Link></li>
-              <li><Link href="/manufacturing" className="hover:text-accent transition-colors">Kanyakumari Wire Forming Mill</Link></li>
-              <li><Link href="/quality" className="hover:text-accent transition-colors">Quality Control & Salt-Spray Tests</Link></li>
-            </ul>
+            <h4 className="text-xs font-mono uppercase tracking-wider font-bold text-white mb-3">
+              Kanyakumari Delivery Towns
+            </h4>
+            <div className="grid grid-cols-2 gap-1.5 text-xs text-slate-400">
+              <span>• Nagercoil</span>
+              <span>• Marthandam</span>
+              <span>• Thuckalay</span>
+              <span>• Colachel</span>
+              <span>• Karungal</span>
+              <span>• Kuzhithurai</span>
+              <span>• Suchindram</span>
+              <span>• Aralvaimozhi</span>
+              <span>• Padmanabhapuram</span>
+              <span>• Kaliyakkavilai</span>
+              <span>• Kulasekharam</span>
+              <span>• Monday Market</span>
+            </div>
           </div>
 
           <div>
-            <p className="eyebrow mb-4 text-accent font-bold">Plant Address & Logistics</p>
-            <div className="space-y-2 text-xs text-sidebar-foreground/80 leading-relaxed">
+            <h4 className="text-xs font-mono uppercase tracking-wider font-bold text-white mb-3">
+              Wholesale Order Helpline
+            </h4>
+            <div className="space-y-2.5 text-xs text-slate-400 leading-relaxed">
               <p className="flex items-start gap-2">
-                <MapPin size={14} className="text-accent shrink-0 mt-0.5" />
-                <span>Plot 18-22, Cape Industrial Estate, Nagercoil – Kanyakumari Highway, Kanyakumari District, Tamil Nadu - 629702, India.</span>
+                <MapPin size={15} className="text-orange-400 shrink-0 mt-0.5" />
+                <span>Cape Industrial Estate, Nagercoil – Kanyakumari Highway, Kanyakumari District, Tamil Nadu - 629702.</span>
               </p>
               <p className="flex items-center gap-2">
-                <Mail size={14} className="text-accent shrink-0" />
-                <span>sales@kanyakumaripins.com / exports@kanyakumaripins.com</span>
+                <Phone size={15} className="text-orange-400 shrink-0" />
+                <a href="tel:+919876543210" className="hover:text-white font-mono">+91 98765 43210 / +91 4652 245678</a>
               </p>
               <p className="flex items-center gap-2">
-                <Phone size={14} className="text-accent shrink-0" />
-                <span>+91 98765 43210 / +91 4652 245678</span>
-              </p>
-              <p className="flex items-center gap-2">
-                <Globe size={14} className="text-accent shrink-0" />
-                <span>Ports: Tuticorin Port (VO Chidambaranar), Cochin Port, Chennai</span>
+                <MessageSquare size={15} className="text-emerald-400 shrink-0" />
+                <span>WhatsApp Wholesale: +91 98765 43210</span>
               </p>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col justify-between gap-4 border-t border-sidebar-foreground/15 pt-6 text-[11px] text-sidebar-foreground/60 md:flex-row font-mono">
-          <span>© {new Date().getFullYear()} Kanyakumari Safety Pins & Fasteners (Tamil Nadu, India). All Rights Reserved.</span>
-          <span>GST Registered Manufacturer • Direct Dispatch to Tirupur, Karur, Coimbatore, Chennai & Worldwide.</span>
+        <div className="mt-12 pt-6 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500 font-mono">
+          <span>© {new Date().getFullYear()} Kanyakumari Safety Pins Wholesale. All Rights Reserved.</span>
+          <span>B2B Ordering Platform for Kanyakumari District Shops & Tailors.</span>
         </div>
       </div>
     </footer>
   );
 }
 
-function SectionLabel({ children }: { children: ReactNode }) {
+// -----------------------------------------------------------------
+// QUICK WHOLESALE ORDER COMPONENT (RAPID 1-CLICK BUILDER)
+// -----------------------------------------------------------------
+function QuickWholesaleOrder() {
+  const { addItem, formatPrice } = useCart();
+  const [selectedProductId, setSelectedProductId] = useState(products[0].id);
+  const [selectedSize, setSelectedSize] = useState(products[0].sizes[2] || products[0].sizes[0]);
+  const [selectedPackId, setSelectedPackId] = useState(products[0].packs[1]?.id || products[0].packs[0].id);
+  const [quantityPacks, setQuantityPacks] = useState(5);
+  const [addedNotice, setAddedNotice] = useState(false);
+
+  const currentProduct = products.find((p) => p.id === selectedProductId) || products[0];
+  const currentPack = currentProduct.packs.find((p) => p.id === selectedPackId) || currentProduct.packs[0];
+
+  const handleProductChange = (productId: string) => {
+    setSelectedProductId(productId);
+    const prod = products.find((p) => p.id === productId) || products[0];
+    setSelectedSize(prod.sizes[0]);
+    setSelectedPackId(prod.packs[1]?.id || prod.packs[0].id);
+  };
+
+  const handleQuickAdd = () => {
+    addItem(currentProduct, selectedSize, currentPack, quantityPacks);
+    setAddedNotice(true);
+    setTimeout(() => setAddedNotice(false), 2500);
+  };
+
+  const calculatedTotal = currentPack.price * quantityPacks;
+  const calculatedPieces = currentPack.count * quantityPacks;
+
   return (
-    <div className="eyebrow flex items-center gap-2 text-accent font-bold">
-      <span className="h-px w-6 bg-accent" />
-      {children}
+    <div className="border border-slate-200 bg-white rounded-xl shadow-md p-5 sm:p-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-5 mb-6">
+        <div>
+          <span className="eyebrow text-orange-600 font-bold">Fast Wholesale Builder</span>
+          <h3 className="font-display text-2xl font-bold text-slate-900 mt-1">
+            Quick Wholesale Order
+          </h3>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Select size, pack quantity, and add directly to your wholesale order.
+          </p>
+        </div>
+        <div className="bg-orange-50 border border-orange-200 text-orange-800 text-xs px-3 py-1.5 rounded-md font-mono font-semibold self-start sm:self-auto">
+          Instant Cart Addition
+        </div>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-4 items-end">
+        {/* Step 1: Pin Type */}
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+            1. Pin Type
+          </label>
+          <select
+            value={selectedProductId}
+            onChange={(e) => handleProductChange(e.target.value)}
+            className="w-full bg-slate-50 border border-slate-300 rounded-md p-2.5 text-xs font-medium text-slate-900 outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
+          >
+            {products.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name.split('(')[0]}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Step 2: Size */}
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+            2. Safety Pin Size
+          </label>
+          <select
+            value={selectedSize}
+            onChange={(e) => setSelectedSize(e.target.value)}
+            className="w-full bg-slate-50 border border-slate-300 rounded-md p-2.5 text-xs font-medium text-slate-900 outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
+          >
+            {currentProduct.sizes.map((sz) => (
+              <option key={sz} value={sz}>
+                {sz}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Step 3: Pack Packaging */}
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+            3. Wholesale Packaging
+          </label>
+          <select
+            value={selectedPackId}
+            onChange={(e) => setSelectedPackId(e.target.value)}
+            className="w-full bg-slate-50 border border-slate-300 rounded-md p-2.5 text-xs font-medium text-slate-900 outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
+          >
+            {currentProduct.packs.map((pk) => (
+              <option key={pk.id} value={pk.id}>
+                {pk.name} ({formatPrice(pk.price)})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Step 4: Number of Packs */}
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+            4. Number of Packs
+          </label>
+          <div className="flex items-center border border-slate-300 rounded-md bg-white">
+            <button
+              type="button"
+              onClick={() => setQuantityPacks(Math.max(1, quantityPacks - 1))}
+              className="p-2.5 text-slate-600 hover:bg-slate-100 rounded-l-md"
+            >
+              <Minus size={14} />
+            </button>
+            <span className="flex-1 text-center font-mono font-bold text-xs text-slate-900">
+              {quantityPacks} {quantityPacks === 1 ? 'Pack' : 'Packs'}
+            </span>
+            <button
+              type="button"
+              onClick={() => setQuantityPacks(quantityPacks + 1)}
+              className="p-2.5 text-slate-600 hover:bg-slate-100 rounded-r-md"
+            >
+              <Plus size={14} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Summary Strip & Add Button */}
+      <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50 p-4 rounded-lg">
+        <div className="text-xs font-mono space-y-0.5 text-center sm:text-left">
+          <div className="text-slate-600">
+            Selected: <strong className="text-slate-900">{selectedSize}</strong> • {currentPack.name} × {quantityPacks}
+          </div>
+          <div className="text-slate-500">
+            Total Volume: <strong className="text-slate-900">{calculatedPieces.toLocaleString()} pieces</strong> | Total Price:{' '}
+            <span className="font-display font-bold text-base text-orange-600">{formatPrice(calculatedTotal)}</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleQuickAdd}
+          className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-md font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-98"
+        >
+          {addedNotice ? (
+            <>
+              <Check size={16} />
+              <span>Added to Order!</span>
+            </>
+          ) : (
+            <>
+              <ShoppingBag size={16} />
+              <span>Add to Wholesale Order</span>
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 }
 
-// ----------------------------------------------------
-// PRODUCT CARD COMPONENT
-// ----------------------------------------------------
-function ProductCard({ product, onQuickView }: { product: Product; onQuickView: (p: Product) => void }) {
+// -----------------------------------------------------------------
+// PRODUCT CARD FOR WHOLESALE SHOPPING
+// -----------------------------------------------------------------
+function WholesaleProductCard({ product }: { product: Product }) {
   const { addItem, formatPrice } = useCart();
-  const defaultPack = product.packs.find((p) => p.popular) || product.packs[0];
+  const [selectedSize, setSelectedSize] = useState<string>(product.sizes[0]);
+  const [selectedPackId, setSelectedPackId] = useState<string>(
+    product.packs.find((p) => p.popular)?.id || product.packs[0].id
+  );
+  const [qty, setQty] = useState(1);
+  const [justAdded, setJustAdded] = useState(false);
 
-  const handleWhatsAppInquiry = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const text = encodeURIComponent(
-      `Hello Kanyakumari Safety Pins (Tamil Nadu),\n` +
-      `I would like to inquire about bulk rates in Rupees (₹) for:\n` +
-      `• Product: ${product.name} (${product.code})\n` +
-      `• Available Sizes: ${product.sizes.join(', ')}\n` +
-      `• Finish: ${product.finish}\n` +
-      `Please provide factory quotation & dispatch time to our location.`
-    );
-    window.open(`https://wa.me/919876543210?text=${text}`, '_blank');
+  const currentPack = product.packs.find((p) => p.id === selectedPackId) || product.packs[0];
+
+  const handleAdd = () => {
+    addItem(product, selectedSize, currentPack, qty);
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 2000);
   };
 
   return (
-    <div
-      onClick={() => onQuickView(product)}
-      className="group border border-foreground/15 bg-card hover:border-accent/80 transition-all shadow-xs hover:shadow-md cursor-pointer flex flex-col justify-between rounded-xs overflow-hidden"
-    >
+    <div className="border border-slate-200 bg-white rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between overflow-hidden">
       <div>
-        {/* Product Image Header */}
-        <div className="relative aspect-[16/10] bg-secondary/30 overflow-hidden border-b border-foreground/10">
+        {/* Image & Badges */}
+        <div className="relative aspect-[16/10] bg-slate-100 overflow-hidden border-b border-slate-100">
           <img
             src={product.imageUrl || '/images/indian-safety-pins-hero.jpg'}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
+            className="w-full h-full object-cover"
           />
-          <div className="absolute top-2.5 left-2.5 bg-sidebar/85 text-sidebar-foreground px-2 py-1 text-[10px] font-mono font-bold backdrop-blur-xs rounded-xs">
+          <div className="absolute top-2.5 left-2.5 bg-slate-900/90 text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-sm">
             {product.code}
           </div>
-          <div className="absolute top-2.5 right-2.5 bg-accent text-accent-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-xs">
-            {product.family.split(' ')[0]}
+          <div className="absolute top-2.5 right-2.5 bg-orange-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">
+            Wholesale Pack
           </div>
         </div>
 
-        {/* Content */}
+        {/* Details */}
         <div className="p-5">
-          <h3 className="font-display text-base font-bold group-hover:text-accent transition-colors leading-snug">
+          <h3 className="font-display text-base font-bold text-slate-900 leading-snug">
             {product.name}
           </h3>
-          <p className="text-xs text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
+          <p className="text-xs text-slate-500 mt-1.5 line-clamp-2 leading-relaxed">
             {product.short}
           </p>
 
-          {/* Quick Specs Pill Grid */}
-          <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] font-mono border-t border-foreground/10 pt-3 text-muted-foreground">
-            <div>
-              <span className="text-[10px] uppercase text-muted-foreground/80 block">Wire Gauge:</span>
-              <strong className="text-foreground">{product.wireGauge.split('(')[0]}</strong>
+          {/* Size Selector */}
+          <div className="mt-4">
+            <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Select Size:
+            </label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {product.sizes.slice(0, 4).map((sz) => (
+                <button
+                  type="button"
+                  key={sz}
+                  onClick={() => setSelectedSize(sz)}
+                  className={`px-2 py-1.5 text-left text-xs font-mono rounded-md border transition-all ${
+                    selectedSize === sz
+                      ? 'border-orange-600 bg-orange-50 font-bold text-orange-950 ring-1 ring-orange-500'
+                      : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-slate-50'
+                  }`}
+                >
+                  {sz.split(' ')[0]} {sz.split(' ')[1]}
+                </button>
+              ))}
             </div>
-            <div>
-              <span className="text-[10px] uppercase text-muted-foreground/80 block">Corrosion Salt:</span>
-              <strong className="text-foreground">{product.dimensions.corrosionHours.split(' ')[0]}</strong>
-            </div>
-          </div>
-
-          {/* Sizes Tag Bar */}
-          <div className="mt-3 flex flex-wrap gap-1">
-            {product.sizes.slice(0, 4).map((s) => (
-              <span key={s} className="bg-secondary px-1.5 py-0.5 text-[10px] font-mono rounded-xs text-foreground/80">
-                {s.split(' ')[0]} {s.split(' ')[1]}
-              </span>
-            ))}
             {product.sizes.length > 4 && (
-              <span className="text-[10px] font-mono text-muted-foreground self-center">
-                +{product.sizes.length - 4} more
-              </span>
+              <select
+                value={selectedSize}
+                onChange={(e) => setSelectedSize(e.target.value)}
+                className="mt-1.5 w-full bg-slate-50 border border-slate-200 rounded-md p-1.5 text-xs font-mono text-slate-700 outline-none"
+              >
+                {product.sizes.map((sz) => (
+                  <option key={sz} value={sz}>
+                    {sz}
+                  </option>
+                ))}
+              </select>
             )}
           </div>
+
+          {/* Pack Options */}
+          <div className="mt-4">
+            <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Select Wholesale Pack:
+            </label>
+            <div className="space-y-1.5">
+              {product.packs.map((pk) => (
+                <div
+                  key={pk.id}
+                  onClick={() => setSelectedPackId(pk.id)}
+                  className={`p-2.5 border rounded-md text-xs cursor-pointer flex items-center justify-between transition-all ${
+                    currentPack.id === pk.id
+                      ? 'border-orange-600 bg-orange-50/60 ring-1 ring-orange-500'
+                      : 'border-slate-200 hover:border-slate-300 bg-white'
+                  }`}
+                >
+                  <div>
+                    <span className="font-semibold text-slate-900 block">{pk.name}</span>
+                    <span className="text-[10px] font-mono text-slate-500">
+                      {pk.count.toLocaleString()} pcs • {formatPrice(pk.unitPrice)}/pc
+                    </span>
+                  </div>
+                  <div className="font-display font-bold text-slate-900 text-sm">
+                    {formatPrice(pk.price)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Footer & Action CTAs */}
-      <div className="p-5 pt-0 border-t border-foreground/10 mt-3 flex items-center justify-between gap-2">
-        <div>
-          <span className="text-[10px] font-mono text-muted-foreground block">Factory Price</span>
-          <span className="font-display text-base font-bold text-accent">
-            {formatPrice(defaultPack.unitPrice)} <span className="text-[10px] font-mono text-muted-foreground font-normal">/pc</span>
-          </span>
-        </div>
+      {/* Footer & Add Action */}
+      <div className="p-5 pt-0 border-t border-slate-100 mt-2">
+        <div className="pt-3 flex items-center justify-between gap-3">
+          {/* Quantity */}
+          <div className="flex items-center border border-slate-300 rounded-md bg-white">
+            <button
+              type="button"
+              onClick={() => setQty(Math.max(1, qty - 1))}
+              className="p-2 text-slate-600 hover:bg-slate-100"
+              aria-label="Decrease quantity"
+            >
+              <Minus size={13} />
+            </button>
+            <span className="px-3 font-mono font-bold text-xs text-slate-900">{qty}</span>
+            <button
+              type="button"
+              onClick={() => setQty(qty + 1)}
+              className="p-2 text-slate-600 hover:bg-slate-100"
+              aria-label="Increase quantity"
+            >
+              <Plus size={13} />
+            </button>
+          </div>
 
-        <div className="flex items-center gap-1.5">
+          {/* Add to Order Button */}
           <button
             type="button"
-            onClick={handleWhatsAppInquiry}
-            title="Inquire on WhatsApp"
-            className="p-2 border border-emerald-600/30 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xs transition-colors"
+            onClick={handleAdd}
+            className="flex-1 bg-orange-600 hover:bg-orange-700 text-white py-2.5 px-3 rounded-md font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-xs transition-transform active:scale-98"
           >
-            <MessageSquare size={14} />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              addItem(product, product.sizes[0], defaultPack, 1);
-            }}
-            className="bg-accent hover:bg-accent/90 text-accent-foreground px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-xs flex items-center gap-1 shadow-xs transition-transform active:scale-95"
-          >
-            <ShoppingBag size={13} />
-            <span>Add</span>
+            {justAdded ? (
+              <>
+                <Check size={14} />
+                <span>Added!</span>
+              </>
+            ) : (
+              <>
+                <ShoppingBag size={14} />
+                <span>Add to Order ({formatPrice(currentPack.price * qty)})</span>
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -402,362 +593,151 @@ function ProductCard({ product, onQuickView }: { product: Product; onQuickView: 
   );
 }
 
-// ----------------------------------------------------
-// PRODUCT DETAIL MODAL
-// ----------------------------------------------------
-function ProductModal({ product, onClose }: { product: Product | null; onClose: () => void }) {
-  const { addItem, formatPrice } = useCart();
-  const [selectedSize, setSelectedSize] = useState<string>('');
-  const [selectedPackId, setSelectedPackId] = useState<string>('');
-  const [qty, setQty] = useState(1);
+// -----------------------------------------------------------------
+// WHOLESALE SHOPPING / HOMEPAGE
+// -----------------------------------------------------------------
+function WholesaleShopHome() {
+  const [activeCategory, setActiveCategory] = useState('ALL');
+  const catalogueRef = useRef<HTMLDivElement>(null);
+  const sizeChartRef = useRef<HTMLDivElement>(null);
 
-  if (!product) return null;
-
-  const currentSize = selectedSize || product.sizes[0];
-  const currentPack = product.packs.find((p) => p.id === selectedPackId) || product.packs[0];
-
-  const handleWhatsApp = () => {
-    const text = encodeURIComponent(
-      `*INQUIRY: ${product.name}*\n` +
-      `• Code: ${product.code}\n` +
-      `• Selected Size: ${currentSize}\n` +
-      `• Selected Pack: ${currentPack.name} (${currentPack.count.toLocaleString()} pcs)\n` +
-      `• Quantity: ${qty} pack(s) = ${(qty * currentPack.count).toLocaleString()} pcs\n` +
-      `• Finish: ${product.finish}\n` +
-      `Please provide GST tax invoice & delivery schedule from Kanyakumari.`
-    );
-    window.open(`https://wa.me/919876543210?text=${text}`, '_blank');
+  const scrollToCatalogue = () => {
+    catalogueRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="relative w-full max-w-4xl bg-background border border-foreground/20 shadow-2xl rounded-xs overflow-hidden animate-in zoom-in-95 duration-200">
-        {/* Close Button */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 bg-background/80 hover:bg-background text-foreground border border-foreground/20 rounded-xs"
-        >
-          <X size={18} />
-        </button>
-
-        <div className="grid md:grid-cols-[1.1fr_1.3fr] max-h-[85vh] overflow-y-auto">
-          {/* Left Media Column */}
-          <div className="p-6 bg-secondary/30 border-r border-foreground/10 flex flex-col justify-between">
-            <div>
-              <div className="aspect-[4/3] bg-background border border-foreground/15 rounded-xs overflow-hidden mb-4">
-                <img
-                  src={product.imageUrl || '/images/indian-safety-pins-hero.jpg'}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <div className="space-y-2 text-xs font-mono">
-                <div className="flex justify-between border-b border-foreground/10 pb-1.5">
-                  <span className="text-muted-foreground">Product Code:</span>
-                  <span className="font-bold text-foreground">{product.code}</span>
-                </div>
-                <div className="flex justify-between border-b border-foreground/10 pb-1.5">
-                  <span className="text-muted-foreground">Material Wire:</span>
-                  <span className="font-bold text-foreground text-right">{product.wire}</span>
-                </div>
-                <div className="flex justify-between border-b border-foreground/10 pb-1.5">
-                  <span className="text-muted-foreground">Wire Gauge:</span>
-                  <span className="font-bold text-foreground">{product.wireGauge}</span>
-                </div>
-                <div className="flex justify-between border-b border-foreground/10 pb-1.5">
-                  <span className="text-muted-foreground">Surface Finish:</span>
-                  <span className="font-bold text-foreground text-right">{product.finish}</span>
-                </div>
-                <div className="flex justify-between border-b border-foreground/10 pb-1.5">
-                  <span className="text-muted-foreground">Tensile Strength:</span>
-                  <span className="font-bold text-accent">{product.dimensions.tensileStrengthN}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Plant Origin:</span>
-                  <span className="font-bold text-foreground">Kanyakumari, Tamil Nadu</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-foreground/10">
-              <div className="flex flex-wrap gap-1.5">
-                {product.compliance.map((c) => (
-                  <span key={c} className="bg-secondary px-2 py-0.5 text-[10px] font-mono rounded-xs text-foreground/80">
-                    ✓ {c}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Configuration Column */}
-          <div className="p-6 md:p-8 space-y-6">
-            <div>
-              <span className="eyebrow text-accent">{product.family} • Made in Kanyakumari</span>
-              <h2 className="font-display text-2xl font-bold text-foreground mt-1">
-                {product.name}
-              </h2>
-              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                {product.description}
-              </p>
-            </div>
-
-            {/* Size Selector */}
-            <div>
-              <label className="block eyebrow text-muted-foreground mb-2">Select Safety Pin Size:</label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {product.sizes.map((sz) => (
-                  <button
-                    type="button"
-                    key={sz}
-                    onClick={() => setSelectedSize(sz)}
-                    className={`p-2 text-left border text-xs font-mono rounded-xs transition-all ${
-                      currentSize === sz
-                        ? 'border-accent bg-accent/10 font-bold text-foreground ring-1 ring-accent'
-                        : 'border-foreground/15 hover:border-foreground/40 bg-background'
-                    }`}
-                  >
-                    {sz}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Pack Options */}
-            <div>
-              <label className="block eyebrow text-muted-foreground mb-2">Select Packaging Unit:</label>
-              <div className="space-y-2">
-                {product.packs.map((p) => (
-                  <div
-                    key={p.id}
-                    onClick={() => setSelectedPackId(p.id)}
-                    className={`p-3 border text-xs flex items-center justify-between cursor-pointer rounded-xs transition-all ${
-                      currentPack.id === p.id
-                        ? 'border-accent bg-accent/5 ring-1 ring-accent font-semibold'
-                        : 'border-foreground/15 hover:border-foreground/30'
-                    }`}
-                  >
-                    <div>
-                      <div className="font-bold text-foreground flex items-center gap-2">
-                        <span>{p.name}</span>
-                        {p.popular && (
-                          <span className="bg-accent/20 text-accent text-[9px] font-mono px-1.5 py-0.2 rounded-xs">
-                            MOST POPULAR
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-[11px] text-muted-foreground font-mono">
-                        {p.count.toLocaleString()} pieces • {formatPrice(p.unitPrice)} / pc
-                      </span>
-                    </div>
-                    <div className="text-right font-display text-sm font-bold text-accent">
-                      {formatPrice(p.price)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Quantity and Order Buttons */}
-            <div className="pt-4 border-t border-foreground/10 space-y-3">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center border border-foreground/20 rounded-xs bg-background">
-                  <button
-                    type="button"
-                    onClick={() => setQty(Math.max(1, qty - 1))}
-                    className="p-2.5 hover:bg-secondary text-foreground"
-                  >
-                    <Minus size={14} />
-                  </button>
-                  <span className="px-4 font-mono font-bold text-xs">{qty}</span>
-                  <button
-                    type="button"
-                    onClick={() => setQty(qty + 1)}
-                    className="p-2.5 hover:bg-secondary text-foreground"
-                  >
-                    <Plus size={14} />
-                  </button>
-                </div>
-                <div className="flex-1 text-right">
-                  <span className="text-[11px] text-muted-foreground block font-mono">
-                    Total: {(qty * currentPack.count).toLocaleString()} pcs
-                  </span>
-                  <span className="font-display text-xl font-bold text-accent">
-                    {formatPrice(currentPack.price * qty)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    addItem(product, currentSize, currentPack, qty);
-                    onClose();
-                  }}
-                  className="bg-accent text-accent-foreground py-3 font-bold text-xs uppercase tracking-wider rounded-xs flex items-center justify-center gap-2 shadow-md hover:brightness-105"
-                >
-                  <ShoppingBag size={15} />
-                  <span>Add to Order Cart</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleWhatsApp}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white py-3 font-bold text-xs uppercase tracking-wider rounded-xs flex items-center justify-center gap-2"
-                >
-                  <MessageSquare size={15} />
-                  <span>WhatsApp Quote</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ----------------------------------------------------
-// HOMEPAGE
-// ----------------------------------------------------
-function Home() {
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [activeProductModal, setActiveProductModal] = useState<Product | null>(null);
+  const scrollToSizeChart = () => {
+    sizeChartRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const categories = [
-    { id: 'ALL', label: 'All Safety Pins' },
-    { id: 'STANDARD', label: 'Standard Steel Nickel' },
-    { id: 'BRASS', label: 'Pure Brass (Golden)' },
+    { id: 'ALL', label: 'All Wholesale Pins' },
+    { id: 'STANDARD', label: 'Standard Nickel Steel' },
+    { id: 'BRASS', label: 'Pure Brass Golden (100% Rustproof)' },
     { id: 'BUNCH', label: 'Bunched Ring Packs' },
-    { id: 'HANGTAG', label: 'Pear / Bulb Hangtag' },
+    { id: 'HANGTAG', label: 'Pear / Bulb Tag Pins' },
+    { id: 'TAILOR', label: 'Tailor Box Combos' },
     { id: 'HEAVY', label: 'Heavy Duty Laundry' },
-    { id: 'STAINLESS', label: 'Stainless 316' },
   ];
 
-  const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'ALL') return products;
-    if (selectedCategory === 'STANDARD') return products.filter((p) => p.family.includes('Standard'));
-    if (selectedCategory === 'BRASS') return products.filter((p) => p.family.includes('Premium') || p.name.includes('Brass'));
-    if (selectedCategory === 'BUNCH') return products.filter((p) => p.id.includes('bunched'));
-    if (selectedCategory === 'HANGTAG') return products.filter((p) => p.family.includes('Fashion') || p.name.includes('Pear'));
-    if (selectedCategory === 'HEAVY') return products.filter((p) => p.family.includes('Heavy'));
-    if (selectedCategory === 'STAINLESS') return products.filter((p) => p.id.includes('stainless'));
+  const filtered = useMemo(() => {
+    if (activeCategory === 'ALL') return products;
+    if (activeCategory === 'STANDARD') return products.filter((p) => p.family.includes('Standard'));
+    if (activeCategory === 'BRASS') return products.filter((p) => p.name.includes('Brass') || p.id.includes('brass'));
+    if (activeCategory === 'BUNCH') return products.filter((p) => p.id.includes('bunched'));
+    if (activeCategory === 'HANGTAG') return products.filter((p) => p.name.includes('Pear') || p.family.includes('Fashion'));
+    if (activeCategory === 'TAILOR') return products.filter((p) => p.id.includes('assorted') || p.name.includes('Tailor'));
+    if (activeCategory === 'HEAVY') return products.filter((p) => p.family.includes('Heavy') || p.id.includes('heavy'));
     return products;
-  }, [selectedCategory]);
+  }, [activeCategory]);
 
   return (
-    <>
-      <ProductModal product={activeProductModal} onClose={() => setActiveProductModal(null)} />
-
-      {/* Hero Section */}
-      <section className="bg-sidebar text-sidebar-foreground py-16 md:py-24 border-b border-sidebar-foreground/15 relative overflow-hidden">
-        <div className="mx-auto max-w-[1440px] px-4 md:px-8 grid md:grid-cols-[1.1fr_0.9fr] items-center gap-10">
-          <div>
-            <div className="inline-flex items-center gap-2 bg-sidebar-foreground/10 border border-sidebar-foreground/20 px-3 py-1 text-xs font-mono text-accent rounded-xs mb-6">
-              <span>🇮🇳</span>
-              <span>KANYAKUMARI, TAMIL NADU • DIRECT MILL RATES (₹ RUPEES)</span>
-            </div>
-
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05] text-white">
-              PRECISION SAFETY PINS<br />
-              <span className="text-accent">FROM KANYAKUMARI, TAMIL NADU.</span>
-            </h1>
-
-            <p className="mt-6 text-sm sm:text-base text-sidebar-foreground/80 max-w-xl leading-relaxed">
-              Precision high-tensile safety pins manufactured in Kanyakumari District, Tamil Nadu. Directly supplying the Tirupur garment export cluster, Karur home textiles, Coimbatore, and global apparel brands across 50+ countries via Tuticorin Port.
-            </p>
-
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link
-                href="/products"
-                className="bg-accent hover:bg-accent/90 text-accent-foreground px-6 py-3.5 font-bold text-xs uppercase tracking-wider flex items-center gap-2 rounded-xs shadow-lg transition-transform hover:-translate-y-0.5"
-              >
-                <span>View Product Catalogue</span>
-                <ArrowRight size={15} />
-              </Link>
-              <Link
-                href="/custom-quote"
-                className="border border-sidebar-foreground/35 hover:border-accent text-sidebar-foreground hover:text-accent px-6 py-3.5 font-bold text-xs uppercase tracking-wider flex items-center gap-2 rounded-xs transition-colors"
-              >
-                <span>Bulk RFQ in Rupees (₹)</span>
-                <Sliders size={15} />
-              </Link>
-              <Link
-                href="/samples"
-                className="bg-sidebar-foreground/10 hover:bg-sidebar-foreground/20 text-sidebar-foreground px-5 py-3.5 font-bold text-xs uppercase tracking-wider flex items-center gap-2 rounded-xs transition-colors"
-              >
-                <Box size={15} className="text-accent" />
-                <span>Free Sample Box</span>
-              </Link>
-            </div>
-
-            {/* Quick Metrics Bar */}
-            <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-sidebar-foreground/15 pt-6 font-mono text-xs">
-              <div>
-                <strong className="block text-xl font-bold font-display text-white">500M+</strong>
-                <span className="text-[10px] text-sidebar-foreground/60 uppercase">Annual Pin Output</span>
+    <div className="space-y-16 sm:space-y-24">
+      {/* 1. HERO SECTION (COMMERCE-FOCUSED) */}
+      <section className="bg-gradient-to-b from-white to-slate-50 border-b border-slate-200 py-12 md:py-20">
+        <div className="mx-auto max-w-[1360px] px-4 sm:px-6">
+          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center">
+            {/* Hero Left Content */}
+            <div>
+              <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-900 border border-orange-200 px-3 py-1 rounded-full text-xs font-mono font-bold mb-5">
+                <span>📍</span> KANYAKUMARI DISTRICT WHOLESALE B2B
               </div>
-              <div>
-                <strong className="block text-xl font-bold font-display text-white">Tuticorin</strong>
-                <span className="text-[10px] text-sidebar-foreground/60 uppercase">Export Port Hub</span>
+
+              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.05]">
+                SAFETY PINS<br />
+                <span className="text-orange-600">DELIVERED ACROSS KANYAKUMARI</span>
+              </h1>
+
+              <p className="mt-5 text-base sm:text-lg text-slate-600 leading-relaxed max-w-xl">
+                Wholesale Safety Pins in multiple sizes for shops, tailors, textile businesses and garment units.
+              </p>
+
+              {/* Primary & Secondary CTAs */}
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={scrollToCatalogue}
+                  className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-7 py-3.5 rounded-md font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-all"
+                >
+                  <ShoppingBag size={16} />
+                  <span>ORDER SAFETY PINS</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={scrollToSizeChart}
+                  className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 px-6 py-3.5 rounded-md font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
+                >
+                  <span>VIEW SIZES & PRICES</span>
+                  <ArrowDown size={14} />
+                </button>
               </div>
-              <div>
-                <strong className="block text-xl font-bold font-display text-white">±0.015 mm</strong>
-                <span className="text-[10px] text-sidebar-foreground/60 uppercase">Wire Tolerance</span>
-              </div>
-              <div>
-                <strong className="block text-xl font-bold font-display text-accent">ISO 9001</strong>
-                <span className="text-[10px] text-sidebar-foreground/60 uppercase">Tamil Nadu Quality</span>
+
+              {/* Quick Trust Highlights */}
+              <div className="mt-10 grid grid-cols-3 gap-3 border-t border-slate-200 pt-6 font-mono text-xs text-slate-600">
+                <div>
+                  <strong className="block text-slate-900 font-display font-bold text-sm">₹ Direct Rates</strong>
+                  <span>Mill Wholesale Prices</span>
+                </div>
+                <div>
+                  <strong className="block text-slate-900 font-display font-bold text-sm">All Pin Sizes</strong>
+                  <span>Small, Med, Large, Bunched</span>
+                </div>
+                <div>
+                  <strong className="block text-slate-900 font-display font-bold text-sm">Door Delivery</strong>
+                  <span>Across Kanyakumari</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Hero Image Showcase */}
-          <div className="relative">
-            <div className="border border-sidebar-foreground/20 rounded-xs overflow-hidden shadow-2xl bg-sidebar/50">
-              <img
-                src="/images/indian-safety-pins-hero.jpg"
-                alt="Kanyakumari Tamil Nadu manufactured safety pins silver nickel and golden brass"
-                className="w-full h-auto object-cover"
-              />
-              <div className="p-4 bg-sidebar border-t border-sidebar-foreground/15 flex items-center justify-between text-xs font-mono">
-                <span className="text-sidebar-foreground/80 flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                  Kanyakumari Plant • Direct Factory Rates
-                </span>
-                <span className="text-accent font-bold">₹ Prices Available</span>
+            {/* Hero Right Visual Showcase */}
+            <div>
+              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-lg p-2">
+                <img
+                  src="/images/indian-safety-pins-hero.jpg"
+                  alt="Wholesale Safety Pins Kanyakumari Tamil Nadu"
+                  className="w-full h-auto object-cover rounded-lg"
+                />
+                <div className="p-3 bg-slate-50 border border-slate-100 rounded-md mt-2 flex items-center justify-between text-xs font-mono">
+                  <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                    <CheckCircle2 size={15} className="text-emerald-600" />
+                    Wholesale Packs Ready for Dispatch
+                  </span>
+                  <span className="text-orange-600 font-bold">100 / 1,000 / 10,000 Pcs</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Product Showcase & Catalogue Section */}
-      <section className="mx-auto max-w-[1440px] px-4 md:px-8 py-16 md:py-24">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-foreground/15 pb-6 mb-10">
+      {/* 2. QUICK WHOLESALE ORDER AREA */}
+      <section className="mx-auto max-w-[1360px] px-4 sm:px-6">
+        <QuickWholesaleOrder />
+      </section>
+
+      {/* 3. SAFETY PIN PRODUCT CATALOGUE (CORE SECTION) */}
+      <section ref={catalogueRef} className="mx-auto max-w-[1360px] px-4 sm:px-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-5 mb-8">
           <div>
-            <SectionLabel>Manufactured in Kanyakumari, Tamil Nadu</SectionLabel>
-            <h2 className="font-display text-3xl md:text-4xl font-extrabold mt-2 text-foreground">
-              Safety Pin Range & Pricing (₹)
+            <span className="eyebrow text-orange-600 font-bold">Wholesale Stock Catalogue</span>
+            <h2 className="font-display text-3xl font-extrabold text-slate-900 mt-1">
+              Choose Safety Pin Products & Packs
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Precision cold-drawn spring wire safety pins for garment tagging, retail packaging, laundries, and textile export.
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Select pack quantity and click "ADD TO ORDER" to build your wholesale consignment.
             </p>
           </div>
 
-          {/* Category Tabs */}
-          <div className="flex flex-wrap gap-2">
+          {/* Category Filter Pills */}
+          <div className="flex flex-wrap gap-1.5">
             {categories.map((cat) => (
               <button
                 type="button"
                 key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 py-1.5 text-xs font-mono font-bold rounded-xs transition-all ${
-                  selectedCategory === cat.id
-                    ? 'bg-accent text-accent-foreground shadow-xs'
-                    : 'bg-secondary text-foreground/80 hover:bg-secondary/80'
+                onClick={() => setActiveCategory(cat.id)}
+                className={`px-3 py-1.5 text-xs font-mono font-bold rounded-md transition-all ${
+                  activeCategory === cat.id
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
                 {cat.label}
@@ -766,541 +746,469 @@ function Home() {
           </div>
         </div>
 
-        {/* Product Grid */}
+        {/* Product Cards Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map((p) => (
-            <ProductCard key={p.id} product={p} onQuickView={setActiveProductModal} />
+          {filtered.map((p) => (
+            <WholesaleProductCard key={p.id} product={p} />
           ))}
         </div>
       </section>
 
-      {/* Indian Standard Size Chart Matrix Section */}
-      <section className="bg-secondary/40 border-y border-foreground/10 py-16 md:py-24">
-        <div className="mx-auto max-w-[1440px] px-4 md:px-8">
+      {/* 4. KANYAKUMARI LOCAL ORDERING & DELIVERY AREA */}
+      <section className="bg-slate-50 border-y border-slate-200 py-16">
+        <div className="mx-auto max-w-[1360px] px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <SectionLabel>Tamil Nadu Standard Engineering Matrix</SectionLabel>
-            <h2 className="font-display text-3xl md:text-4xl font-bold mt-2">
-              Indian Standard Safety Pin Size Chart
+            <span className="eyebrow text-orange-600 font-bold">District Delivery & Supply</span>
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1">
+              ORDER FROM ANYWHERE IN KANYAKUMARI
             </h2>
-            <p className="text-sm text-muted-foreground mt-2">
-              Standard Indian size numbering (#000 to #6), lengths in millimeters, SWG wire diameters, and pieces per kilogram.
+            <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+              We supply retail shops, tailoring ateliers, garment units, and textile stores across all major taluks and towns of Kanyakumari District.
             </p>
           </div>
 
-          <div className="overflow-x-auto border border-foreground/15 bg-card shadow-sm rounded-xs">
+          {/* Towns Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-10">
+            {KANYAKUMARI_AREAS.slice(0, 12).map((town) => (
+              <div
+                key={town}
+                className="bg-white border border-slate-200 p-3.5 rounded-lg text-center shadow-xs hover:border-orange-500 transition-colors"
+              >
+                <MapPin size={16} className="text-orange-600 mx-auto mb-1" />
+                <strong className="block text-xs font-bold text-slate-900 font-display">{town}</strong>
+                <span className="text-[10px] font-mono text-slate-500">Local Delivery</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Delivery Policy Details */}
+          <div className="bg-white border border-slate-200 p-6 sm:p-8 rounded-xl shadow-xs grid sm:grid-cols-3 gap-6 font-mono text-xs">
+            <div className="flex gap-3 items-start">
+              <Truck size={20} className="text-orange-600 shrink-0 mt-0.5" />
+              <div>
+                <strong className="block text-slate-900 font-bold text-sm font-sans">Shop Doorstep Delivery</strong>
+                <p className="text-slate-500 mt-1 font-sans">Direct delivery to retail counters, tailoring shops, and textile units.</p>
+              </div>
+            </div>
+            <div className="flex gap-3 items-start">
+              <PackageCheck size={20} className="text-orange-600 shrink-0 mt-0.5" />
+              <div>
+                <strong className="block text-slate-900 font-bold text-sm font-sans">Wholesale Pack Cartons</strong>
+                <p className="text-slate-500 mt-1 font-sans">Sealed boxes and master cartons with intact piece count guarantee.</p>
+              </div>
+            </div>
+            <div className="flex gap-3 items-start">
+              <Building2 size={20} className="text-orange-600 shrink-0 mt-0.5" />
+              <div>
+                <strong className="block text-slate-900 font-bold text-sm font-sans">Flexible Billing</strong>
+                <p className="text-slate-500 mt-1 font-sans">GST Tax Invoice, Cash on Delivery, and UPI / Bank payment options.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. BUILT FOR KANYAKUMARI BUSINESSES */}
+      <section className="mx-auto max-w-[1360px] px-4 sm:px-6">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <span className="eyebrow text-orange-600 font-bold">Local Business Solutions</span>
+          <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1">
+            BUILT FOR KANYAKUMARI BUSINESSES
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-2">
+            Tailored wholesale packaging and pin geometries for local industry requirements.
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            {
+              icon: Scissors,
+              title: 'TAILORING SHOPS',
+              desc: 'Sharp needle-point pins for saree pleating, basting, blouse alterations, and trial fittings without damaging fabric.',
+            },
+            {
+              icon: Shirt,
+              title: 'GARMENT SHOPS',
+              desc: 'Pear bulb pins and bunched pins for price tag attachments, garment folding, and display hanging.',
+            },
+            {
+              icon: Layers,
+              title: 'TEXTILE STORES',
+              desc: 'High-strength steel and brass pins for securing fabric bundles, saree draping, and bulk textile bolts.',
+            },
+            {
+              icon: Store,
+              title: 'RETAIL SHOPS',
+              desc: 'Ready-to-sell 100-piece consumer packets and wholesale master cards with high retail profit margins.',
+            },
+            {
+              icon: Award,
+              title: 'UNIFORM MAKERS',
+              desc: 'Heavy-gauge pins for multi-layer school, security, and industrial uniform alignment during mass stitching.',
+            },
+            {
+              icon: ShoppingCart,
+              title: 'WHOLESALERS',
+              desc: 'Bulk corrugated cartons and master ring bunches with tiered distributor discounts across Kanyakumari.',
+            },
+          ].map((item) => (
+            <div key={item.title} className="p-6 border border-slate-200 bg-white rounded-xl shadow-xs">
+              <item.icon size={24} className="text-orange-600 mb-3" />
+              <h3 className="font-display text-base font-bold text-slate-900">{item.title}</h3>
+              <p className="text-xs text-slate-600 mt-2 leading-relaxed font-sans">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 6. INDIAN SIZE CHART & DIMENSIONS */}
+      <section ref={sizeChartRef} className="bg-slate-50 border-y border-slate-200 py-16">
+        <div className="mx-auto max-w-[1360px] px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <span className="eyebrow text-orange-600 font-bold">Standard Sizing Matrix</span>
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1">
+              Indian Standard Size Chart & Uses
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Dimensions, wire gauges, approximate pieces per kilogram, and recommended shop applications.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto border border-slate-200 bg-white rounded-xl shadow-xs">
             <table className="w-full text-left text-xs font-mono">
-              <thead className="bg-sidebar text-sidebar-foreground text-[11px] uppercase tracking-wider">
+              <thead className="bg-slate-900 text-white uppercase text-[11px] tracking-wider">
                 <tr>
-                  <th className="p-4 border-b border-sidebar-foreground/20">Indian Size No.</th>
-                  <th className="p-4 border-b border-sidebar-foreground/20">Length (MM)</th>
-                  <th className="p-4 border-b border-sidebar-foreground/20">Length (Inches)</th>
-                  <th className="p-4 border-b border-sidebar-foreground/20">Wire Gauge (SWG / Dia)</th>
-                  <th className="p-4 border-b border-sidebar-foreground/20">Approx Pcs / Kg</th>
-                  <th className="p-4 border-b border-sidebar-foreground/20">Recommended Application</th>
+                  <th className="p-4 border-b border-slate-800">Size Number</th>
+                  <th className="p-4 border-b border-slate-800">Length (MM)</th>
+                  <th className="p-4 border-b border-slate-800">Length (Inches)</th>
+                  <th className="p-4 border-b border-slate-800">Wire Gauge</th>
+                  <th className="p-4 border-b border-slate-800">Pcs / Kg</th>
+                  <th className="p-4 border-b border-slate-800">Shop Application</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-foreground/10">
+              <tbody className="divide-y divide-slate-100">
                 {INDIAN_SIZE_CHART.map((row, idx) => (
-                  <tr key={row.sizeNo} className={idx % 2 === 0 ? 'bg-background' : 'bg-secondary/20'}>
-                    <td className="p-4 font-bold text-foreground flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-accent" />
-                      <span>{row.sizeNo}</span>
-                    </td>
-                    <td className="p-4 font-bold text-accent">{row.lengthMm} mm</td>
-                    <td className="p-4 text-muted-foreground">{row.lengthInch}</td>
-                    <td className="p-4 text-foreground">{row.wireGauge}</td>
-                    <td className="p-4 text-muted-foreground">{row.pcsPerKg}</td>
-                    <td className="p-4 font-sans text-xs text-foreground/80">{row.bestFor}</td>
+                  <tr key={row.sizeNo} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
+                    <td className="p-4 font-bold text-slate-900">{row.sizeNo}</td>
+                    <td className="p-4 font-bold text-orange-600">{row.lengthMm} mm</td>
+                    <td className="p-4 text-slate-600">{row.lengthInch}</td>
+                    <td className="p-4 text-slate-700">{row.wireGauge}</td>
+                    <td className="p-4 text-slate-500">{row.pcsPerKg}</td>
+                    <td className="p-4 font-sans text-xs text-slate-700">{row.bestFor}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-muted-foreground">
-            <span>* Fast dispatch across Tirupur, Karur, Coimbatore, Madurai, Chennai and global shipment via Tuticorin Port.</span>
-            <Link href="/custom-quote" className="text-accent hover:underline flex items-center gap-1 font-bold">
-              Calculate Bulk Quote in Rupees (₹) <ArrowUpRight size={14} />
-            </Link>
-          </div>
         </div>
       </section>
 
-      {/* Packaging & OEM Solutions (Ring Bunches as shown in user image) */}
-      <section className="mx-auto max-w-[1440px] px-4 md:px-8 py-16 md:py-24">
-        <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12 items-center">
+      {/* 7. RING BUNCHES & PACKAGING FORMATS */}
+      <section className="mx-auto max-w-[1360px] px-4 sm:px-6">
+        <div className="grid lg:grid-cols-2 gap-10 items-center">
           <div>
-            <SectionLabel>Tirupur & Export Line Ready</SectionLabel>
-            <h2 className="font-display text-3xl md:text-4xl font-extrabold mt-2 text-foreground">
+            <span className="eyebrow text-orange-600 font-bold">Fast Garment Assembly</span>
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1">
               Bunched Ring Packs on Master Safety Pin
             </h2>
-            <p className="text-sm text-muted-foreground mt-4 leading-relaxed">
-              We specialize in traditional South Indian bunched safety pins strung neatly on master ring pins (12, 24, or 36 pins per bunch). Ideal for rapid garment tag assembly lines in Tirupur, commercial laundries, and retail wholesale counters with zero tangles.
+            <p className="text-xs sm:text-sm text-slate-600 mt-3 leading-relaxed">
+              We specialize in bunched safety pins strung neatly on master ring pins (12 or 24 pins per bunch). Ideal for rapid garment tag assembly lines, dry cleaners, and retail wholesale counters with zero tangles.
             </p>
 
-            <div className="mt-8 space-y-4">
-              {PACKAGING_OPTIONS.map((pkg) => (
-                <div key={pkg.title} className="p-4 border border-foreground/15 bg-card rounded-xs flex gap-4">
-                  <div className="w-20 h-20 bg-secondary shrink-0 rounded-xs overflow-hidden border border-foreground/10">
+            <div className="mt-6 space-y-3">
+              {PACKAGING_OPTIONS.slice(0, 3).map((pkg) => (
+                <div key={pkg.title} className="p-3.5 border border-slate-200 bg-white rounded-lg flex gap-3.5 items-center">
+                  <div className="w-16 h-16 bg-slate-100 shrink-0 rounded-md overflow-hidden border border-slate-100">
                     <img src={pkg.image} alt={pkg.title} className="w-full h-full object-cover" />
                   </div>
                   <div>
-                    <div className="flex items-center justify-between gap-2">
-                      <h4 className="font-display text-sm font-bold text-foreground">{pkg.title}</h4>
-                      <span className="text-[10px] font-mono bg-accent/15 text-accent px-1.5 py-0.5 rounded-xs font-bold">
-                        MOQ: {pkg.moq}
-                      </span>
-                    </div>
-                    <p className="text-xs font-mono text-accent font-semibold mt-0.5">{pkg.subtitle}</p>
-                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{pkg.desc}</p>
+                    <h4 className="font-display text-xs font-bold text-slate-900">{pkg.title}</h4>
+                    <p className="text-[11px] font-mono text-orange-600 font-semibold">{pkg.subtitle}</p>
+                    <p className="text-[11px] text-slate-500 leading-snug">{pkg.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="border border-foreground/20 rounded-xs overflow-hidden shadow-xl bg-card">
+          <div>
+            <div className="border border-slate-200 bg-white rounded-xl overflow-hidden shadow-md">
               <img
                 src="/images/safety-pin-ring-bunches.jpg"
-                alt="Kanyakumari safety pin bunches on master safety pin ring"
+                alt="Bunched Ring Packs Kanyakumari"
                 className="w-full h-auto object-cover"
               />
-              <div className="p-4 bg-secondary/40 border-t border-foreground/10 flex items-center justify-between text-xs font-mono">
-                <span className="font-bold text-foreground">FIG. 2.0 — MASTER RING PIN BUNCH PACK</span>
-                <span className="text-accent font-bold">12 / 24 / 36 Pins per Bunch</span>
+              <div className="p-4 bg-slate-900 text-white flex items-center justify-between text-xs font-mono">
+                <span>12 / 24 PINS STRUNG ON MASTER PIN</span>
+                <span className="text-orange-400 font-bold">Ready Wholesale Stock</span>
               </div>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Embedded RFQ Estimator */}
-      <section className="bg-sidebar py-16 md:py-24 border-t border-sidebar-foreground/15">
-        <div className="mx-auto max-w-[1440px] px-4 md:px-8">
-          <CustomPinConfigurator />
-        </div>
-      </section>
-
-      {/* Manufacturing Process & Quality Assurance */}
-      <section className="mx-auto max-w-[1440px] px-4 md:px-8 py-16 md:py-24">
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <SectionLabel>Kanyakumari Manufacturing Plant</SectionLabel>
-          <h2 className="font-display text-3xl md:text-4xl font-extrabold mt-2 text-foreground">
-            Precision Tamil Nadu Manufacturing Process
-          </h2>
-          <p className="text-sm text-muted-foreground mt-2">
-            Every safety pin undergoes a rigorous 6-stage automated forming, point-grinding, electroplating, and optical inspection cycle.
-          </p>
-        </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { step: '01', title: 'High-Tensile Wire Drawing', desc: 'Cold-drawn high carbon steel (C70) & solid brass wire calibrated to strict ±0.015mm diameter tolerances.' },
-            { step: '02', title: 'High-Speed Multi-Slide Forming', desc: 'Automatic pin-forming machines coil the spring helical base and form the protective clasp hood at 250 pcs/min.' },
-            { step: '03', title: 'Needle Point Grinding & Polishing', desc: 'Ultra-sharp burr-free needle tip grinding ensures smooth fiber penetration without tearing textile threads.' },
-            { step: '04', title: 'Multi-Layer Electro-Plating', desc: '8µm mirror nickel plating, brass lacquering, or electro-black coating with 72h+ ASTM B117 salt-spray resistance.' },
-            { step: '05', title: 'Tempering & Spring Tension Test', desc: 'Computerized stress-testing guarantees 1,500+ open-close cycles without plastic deformation or clasp slippage.' },
-            { step: '06', title: 'Optical Sorting & Export Packing', desc: 'Automated vision cameras inspect clasp alignment before bunching into master rings or bulk cartons.' },
-          ].map((item) => (
-            <div key={item.step} className="p-6 border border-foreground/15 bg-card rounded-xs shadow-xs">
-              <div className="font-mono text-2xl font-bold text-accent mb-2">{item.step}</div>
-              <h3 className="font-display text-base font-bold text-foreground">{item.title}</h3>
-              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Free Sample Box CTA Banner */}
-      <section className="bg-accent text-accent-foreground py-14 px-4 md:px-8">
-        <div className="mx-auto max-w-[1440px] flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <span className="eyebrow bg-black/20 text-white px-2 py-0.5 rounded-xs">NO COMMERCIAL OBLIGATION</span>
-            <h2 className="font-display text-3xl md:text-4xl font-extrabold mt-2 text-white">
-              Request a Free 12-Size Sample Box
-            </h2>
-            <p className="text-sm text-white/90 mt-1 max-w-xl">
-              Inspect wire temper, clasp retention, and electroplating finish firsthand. Shipped across Tamil Nadu, India, and internationally.
-            </p>
-          </div>
-          <Link
-            href="/samples"
-            className="bg-sidebar hover:bg-sidebar/90 text-white px-8 py-4 font-bold text-xs uppercase tracking-widest rounded-xs whitespace-nowrap shadow-xl flex items-center justify-center gap-2"
-          >
-            <Box size={16} />
-            <span>Order Free Sample Box</span>
-          </Link>
-        </div>
-      </section>
-    </>
+    </div>
   );
 }
 
-// ----------------------------------------------------
-// CATALOGUE PAGE (PRODUCTS)
-// ----------------------------------------------------
-function Products() {
+// -----------------------------------------------------------------
+// STANDALONE WHOLESALE CATALOGUE PAGE
+// -----------------------------------------------------------------
+function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeProductModal, setActiveProductModal] = useState<Product | null>(null);
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
-      const matchSearch =
+      return (
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.finish.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchSearch;
+        p.finish.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     });
   }, [searchTerm]);
 
   return (
-    <div className="mx-auto max-w-[1440px] px-4 md:px-8 py-12 md:py-20">
-      <ProductModal product={activeProductModal} onClose={() => setActiveProductModal(null)} />
-
-      <div className="border-b border-foreground/15 pb-8 mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="mx-auto max-w-[1360px] px-4 sm:px-6 py-10 md:py-16">
+      <div className="border-b border-slate-200 pb-6 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <SectionLabel>Kanyakumari, Tamil Nadu Collection</SectionLabel>
-          <h1 className="font-display text-4xl md:text-5xl font-extrabold mt-2 text-foreground">
-            Safety Pins Catalogue & Rupee Rates
+          <span className="eyebrow text-orange-600 font-bold">Full Wholesale Catalogue</span>
+          <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1">
+            Safety Pin Range & Wholesale Prices
           </h1>
-          <p className="text-sm text-muted-foreground mt-2 max-w-xl">
-            Browse our complete line of industrial, apparel, brass, laundry, and specialized safety pins manufactured in Tamil Nadu.
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Select size, choose pack count, and click "ADD TO ORDER" to build your order.
           </p>
         </div>
 
         <div className="w-full md:w-80 relative">
-          <Search size={16} className="absolute left-3 top-3.5 text-muted-foreground" />
+          <Search size={16} className="absolute left-3 top-3 text-slate-400" />
           <input
             type="text"
-            placeholder="Search by code, size, finish..."
+            placeholder="Search pin size, brass, bunch..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border border-foreground/20 bg-card pl-9 pr-4 py-2.5 text-xs outline-none focus:border-accent rounded-xs"
+            className="w-full border border-slate-300 bg-white pl-9 pr-4 py-2 text-xs rounded-md outline-none focus:ring-2 focus:ring-orange-500"
           />
         </div>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filtered.map((p) => (
-          <ProductCard key={p.id} product={p} onQuickView={setActiveProductModal} />
+          <WholesaleProductCard key={p.id} product={p} />
         ))}
       </div>
     </div>
   );
 }
 
-// ----------------------------------------------------
-// PRODUCT DETAIL PAGE (DYNAMIC ROUTE)
-// ----------------------------------------------------
-function ProductDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const product = getProduct(id || '');
-
-  if (!product) {
-    return <NotFound />;
-  }
-
+// -----------------------------------------------------------------
+// SIZES & PRICES STANDALONE PAGE
+// -----------------------------------------------------------------
+function SizesPage() {
   return (
-    <div className="mx-auto max-w-[1440px] px-4 md:px-8 py-12 md:py-20">
-      <ProductModal product={product} onClose={() => window.history.back()} />
-    </div>
-  );
-}
-
-// ----------------------------------------------------
-// SIZE CHART STANDALONE PAGE
-// ----------------------------------------------------
-function SizeChartPage() {
-  return (
-    <div className="mx-auto max-w-[1440px] px-4 md:px-8 py-12 md:py-20">
-      <div className="max-w-2xl mb-10">
-        <SectionLabel>Technical Reference Guide</SectionLabel>
-        <h1 className="font-display text-4xl md:text-5xl font-extrabold mt-2 text-foreground">
-          Indian Standard Safety Pin Size Chart
+    <div className="mx-auto max-w-[1360px] px-4 sm:px-6 py-10 md:py-16">
+      <div className="max-w-2xl mb-8">
+        <span className="eyebrow text-orange-600 font-bold">Technical Size Matrix</span>
+        <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1">
+          Safety Pin Sizes & Wholesale Dimensions
         </h1>
-        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-          Standardized dimensional matrix for safety pins produced in Kanyakumari, Tamil Nadu from Size #000 (19mm) micro-pins to Size #6 (75mm/100mm) giant industrial pins.
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          Complete size chart from Size #000 (19mm) micro-pins to Size #6 (75mm) giant industrial pins.
         </p>
       </div>
 
-      <div className="overflow-x-auto border border-foreground/15 bg-card shadow-sm rounded-xs">
+      <div className="overflow-x-auto border border-slate-200 bg-white rounded-xl shadow-xs mb-10">
         <table className="w-full text-left text-xs font-mono">
-          <thead className="bg-sidebar text-sidebar-foreground text-[11px] uppercase tracking-wider">
+          <thead className="bg-slate-900 text-white uppercase text-[11px] tracking-wider">
             <tr>
-              <th className="p-4 border-b border-sidebar-foreground/20">Size No.</th>
-              <th className="p-4 border-b border-sidebar-foreground/20">Length (MM)</th>
-              <th className="p-4 border-b border-sidebar-foreground/20">Length (Inches)</th>
-              <th className="p-4 border-b border-sidebar-foreground/20">Wire Gauge</th>
-              <th className="p-4 border-b border-sidebar-foreground/20">Approx Pcs / Kg</th>
-              <th className="p-4 border-b border-sidebar-foreground/20">Application</th>
+              <th className="p-4 border-b border-slate-800">Size Number</th>
+              <th className="p-4 border-b border-slate-800">Length (MM)</th>
+              <th className="p-4 border-b border-slate-800">Length (Inches)</th>
+              <th className="p-4 border-b border-slate-800">Wire Gauge</th>
+              <th className="p-4 border-b border-slate-800">Pcs / Kg</th>
+              <th className="p-4 border-b border-slate-800">Recommended Shop Use</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-foreground/10">
+          <tbody className="divide-y divide-slate-100">
             {INDIAN_SIZE_CHART.map((row, idx) => (
-              <tr key={row.sizeNo} className={idx % 2 === 0 ? 'bg-background' : 'bg-secondary/20'}>
-                <td className="p-4 font-bold text-foreground">{row.sizeNo}</td>
-                <td className="p-4 font-bold text-accent">{row.lengthMm} mm</td>
-                <td className="p-4 text-muted-foreground">{row.lengthInch}</td>
-                <td className="p-4 text-foreground">{row.wireGauge}</td>
-                <td className="p-4 text-muted-foreground">{row.pcsPerKg}</td>
-                <td className="p-4 font-sans text-xs text-foreground/80">{row.bestFor}</td>
+              <tr key={row.sizeNo} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
+                <td className="p-4 font-bold text-slate-900">{row.sizeNo}</td>
+                <td className="p-4 font-bold text-orange-600">{row.lengthMm} mm</td>
+                <td className="p-4 text-slate-600">{row.lengthInch}</td>
+                <td className="p-4 text-slate-700">{row.wireGauge}</td>
+                <td className="p-4 text-slate-500">{row.pcsPerKg}</td>
+                <td className="p-4 font-sans text-xs text-slate-700">{row.bestFor}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <div className="mt-12 bg-secondary/40 border border-foreground/15 p-8 rounded-xs flex flex-col md:flex-row items-center justify-between gap-6">
-        <div>
-          <h3 className="font-display text-2xl font-bold text-foreground">Need Custom Sizing or Non-Standard Wire?</h3>
-          <p className="text-xs text-muted-foreground mt-1">We engineer bespoke wire geometries from 0.50mm to 2.00mm wire diameter at our Kanyakumari mill.</p>
-        </div>
-        <Link href="/custom-quote" className="bg-accent text-accent-foreground px-6 py-3.5 font-bold text-xs uppercase tracking-wider rounded-xs whitespace-nowrap">
-          Open RFQ Generator
-        </Link>
-      </div>
+      <QuickWholesaleOrder />
     </div>
   );
 }
 
-// ----------------------------------------------------
-// PACKAGING & OEM STANDALONE PAGE
-// ----------------------------------------------------
-function PackagingPage() {
+// -----------------------------------------------------------------
+// KANYAKUMARI DELIVERY STANDALONE PAGE
+// -----------------------------------------------------------------
+function DeliveryPage() {
   return (
-    <div className="mx-auto max-w-[1440px] px-4 md:px-8 py-12 md:py-20">
+    <div className="mx-auto max-w-[1360px] px-4 sm:px-6 py-10 md:py-16">
       <div className="max-w-2xl mb-10">
-        <SectionLabel>Private Label & Bulk Supply</SectionLabel>
-        <h1 className="font-display text-4xl md:text-5xl font-extrabold mt-2 text-foreground">
-          Packaging Formats & OEM Services
+        <span className="eyebrow text-orange-600 font-bold">Local Coverage</span>
+        <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1">
+          Kanyakumari District Delivery & Supply
         </h1>
-        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-          From traditional South Indian bunched ring packs to custom-printed retail blister cards and heavy-duty 7-ply export master cartons.
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          Doorstep delivery to retail counters, tailoring shops, fancy stores, and garment factories across Kanyakumari.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        {PACKAGING_OPTIONS.map((pkg) => (
-          <div key={pkg.title} className="border border-foreground/15 bg-card rounded-xs overflow-hidden shadow-sm flex flex-col justify-between">
-            <div className="aspect-[16/9] bg-secondary border-b border-foreground/10 overflow-hidden">
-              <img src={pkg.image} alt={pkg.title} className="w-full h-full object-cover" />
-            </div>
-            <div className="p-6 flex-1 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <h3 className="font-display text-xl font-bold text-foreground">{pkg.title}</h3>
-                  <span className="bg-accent/15 text-accent text-xs font-mono font-bold px-2 py-0.5 rounded-xs">
-                    MOQ: {pkg.moq}
-                  </span>
-                </div>
-                <p className="font-mono text-xs text-accent font-semibold">{pkg.subtitle}</p>
-                <p className="text-xs text-muted-foreground mt-3 leading-relaxed">{pkg.desc}</p>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-foreground/10 flex justify-between items-center">
-                <span className="text-[11px] font-mono text-muted-foreground">Custom Logo & Barcode Available</span>
-                <Link href="/custom-quote" className="text-accent hover:underline text-xs font-bold font-mono flex items-center gap-1">
-                  Inquire Packing <ArrowRight size={13} />
-                </Link>
-              </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-12">
+        {KANYAKUMARI_AREAS.map((town) => (
+          <div key={town} className="p-4 border border-slate-200 bg-white rounded-lg shadow-xs flex items-center gap-3">
+            <MapPin size={18} className="text-orange-600 shrink-0" />
+            <div>
+              <strong className="block text-xs font-bold text-slate-900 font-display">{town}</strong>
+              <span className="text-[10px] font-mono text-slate-500">Regular Supply Route</span>
             </div>
           </div>
         ))}
       </div>
-    </div>
-  );
-}
 
-// ----------------------------------------------------
-// MANUFACTURING PLANT PAGE
-// ----------------------------------------------------
-function Manufacturing() {
-  return (
-    <div className="mx-auto max-w-[1440px] px-4 md:px-8 py-12 md:py-20">
-      <div className="max-w-2xl mb-12">
-        <SectionLabel>Plant Infrastructure</SectionLabel>
-        <h1 className="font-display text-4xl md:text-5xl font-extrabold mt-2 text-foreground">
-          Kanyakumari Manufacturing Plant
-        </h1>
-        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-          Our advanced production facility in Kanyakumari District, Tamil Nadu operates 48 automated multi-slide cam forming lines, automated needle point grinders, and a zero-effluent electroplating facility.
-        </p>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-10 items-center">
-        <div className="space-y-6">
-          <div className="p-6 border border-foreground/15 bg-card rounded-xs">
-            <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
-              <Factory className="text-accent" size={20} /> High-Speed Automatic Forming Lines
-            </h3>
-            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-              Operating precision high-speed pin forming machines designed to produce up to 250 safety pins per minute per line with repeatable spring tension.
-            </p>
-          </div>
-
-          <div className="p-6 border border-foreground/15 bg-card rounded-xs">
-            <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
-              <Award className="text-accent" size={20} /> Coastal Humidity & Salt-Spray Resistance
-            </h3>
-            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-              Engineered in coastal Tamil Nadu with thick 8µm electro-nickel and solid brass alloys that withstand humidity, detergent wash cycles, and ocean shipping.
-            </p>
-          </div>
-
-          <div className="p-6 border border-foreground/15 bg-card rounded-xs">
-            <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
-              <ShieldCheck className="text-accent" size={20} /> Strategic Port & Highway Logistics
-            </h3>
-            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-              Same-day truck dispatch to Tirupur garment hub, and direct container export shipping via Tuticorin Port (VO Chidambaranar Port) and Cochin Port.
-            </p>
-          </div>
-        </div>
-
+      <div className="bg-slate-900 text-white p-6 sm:p-8 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-6">
         <div>
-          <div className="border border-foreground/20 rounded-xs overflow-hidden shadow-2xl bg-card">
-            <img
-              src="/images/indian-safety-pins-hero.jpg"
-              alt="Kanyakumari Tamil Nadu safety pin manufacturing facility"
-              className="w-full h-auto object-cover"
-            />
-            <div className="p-4 bg-sidebar text-sidebar-foreground text-xs font-mono flex justify-between">
-              <span>Plant Capacity: 500M Pins/Year</span>
-              <span className="text-accent font-bold">Kanyakumari, Tamil Nadu 🇮🇳</span>
-            </div>
-          </div>
+          <h3 className="font-display text-xl font-bold">Have an immediate shop requirement?</h3>
+          <p className="text-xs text-slate-400 mt-1">Call our local wholesale dispatch desk in Kanyakumari for immediate supply.</p>
         </div>
+        <a
+          href="https://wa.me/919876543210?text=Hello%2C%20I%20need%20safety%20pins%20delivered%20to%20my%20shop%20in%20Kanyakumari."
+          target="_blank"
+          rel="noreferrer"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-md font-bold text-xs uppercase tracking-wider flex items-center gap-2 whitespace-nowrap"
+        >
+          <MessageSquare size={16} />
+          <span>WhatsApp Quick Supply</span>
+        </a>
       </div>
     </div>
   );
 }
 
-// ----------------------------------------------------
-// QUALITY & CERTIFICATIONS PAGE
-// ----------------------------------------------------
-function Quality() {
+// -----------------------------------------------------------------
+// FOR BUSINESSES & SHOPS STANDALONE PAGE
+// -----------------------------------------------------------------
+function ForBusinessesPage() {
   return (
-    <div className="mx-auto max-w-[1440px] px-4 md:px-8 py-12 md:py-20">
-      <div className="max-w-2xl mb-12">
-        <SectionLabel>Quality Assurance</SectionLabel>
-        <h1 className="font-display text-4xl md:text-5xl font-extrabold mt-2 text-foreground">
-          ISO 9001:2015 & Global Compliance
+    <div className="mx-auto max-w-[1360px] px-4 sm:px-6 py-10 md:py-16">
+      <div className="max-w-2xl mb-10">
+        <span className="eyebrow text-orange-600 font-bold">Business Solutions</span>
+        <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1">
+          Wholesale Supply for Kanyakumari Businesses
         </h1>
-        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-          Our products comply with strict international regulatory standards for heavy metals, chemical safety, tensile strength, and corrosion resistance.
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          Tailored pack sizes, trade credit terms, and direct factory pricing for local commerce.
         </p>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         {[
-          { title: 'ISO 9001:2015', desc: 'Certified Quality Management System covering wire procurement, precision tooling, and packaging.' },
-          { title: 'REACH (EC 1907/2006)', desc: 'Full compliance with European Union SVHC chemical restrictions for textile accessories.' },
-          { title: 'RoHS Compliant', desc: 'Lead-free, cadmium-free, and mercury-safe plating chemistries tested via lab spectrometry.' },
-          { title: 'Nickel-Safe EN 1811', desc: 'Compliant with low-release nickel migration standards for prolonged direct skin contact.' },
+          { title: 'TAILORING SHOPS', desc: 'Precision burr-free needle points for smooth cloth basting and pleat pinning.' },
+          { title: 'GARMENT SHOPS', desc: 'Teardrop hangtag pins and bunched pins for quick apparel price ticket attachment.' },
+          { title: 'TEXTILE STORES', desc: 'Rustproof brass and nickel pins for saree bundle clipping and fabric rolling.' },
+          { title: 'RETAIL & FANCY SHOPS', desc: '100-pc consumer blister packets and wholesale master cards with retail margins.' },
+          { title: 'UNIFORM MAKERS', desc: 'Extra gauge steel pins for multi-layer school and industrial uniform stitching.' },
+          { title: 'WHOLESALE DISTRIBUTORS', desc: 'Carton volume rates and steady weekly deliveries across Kanyakumari.' },
         ].map((item) => (
-          <div key={item.title} className="p-6 border border-foreground/15 bg-card rounded-xs">
-            <ShieldCheck className="text-accent mb-3" size={24} />
-            <h3 className="font-display text-base font-bold text-foreground">{item.title}</h3>
-            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{item.desc}</p>
+          <div key={item.title} className="p-6 border border-slate-200 bg-white rounded-xl shadow-xs">
+            <h3 className="font-display text-base font-bold text-slate-900">{item.title}</h3>
+            <p className="text-xs text-slate-600 mt-2 leading-relaxed">{item.desc}</p>
           </div>
         ))}
       </div>
 
-      <div className="border border-foreground/15 bg-secondary/30 p-8 rounded-xs font-mono text-xs space-y-3">
-        <h3 className="font-display text-lg font-bold text-foreground font-sans">Mill Test Reports (MTR 3.1) Included</h3>
-        <p className="text-muted-foreground leading-relaxed">
-          With every export consignment from our Kanyakumari plant, we provide complete chemical composition analysis, wire tensile test data, and ASTM B117 salt-spray test certificates.
-        </p>
-      </div>
+      <QuickWholesaleOrder />
     </div>
   );
 }
 
-// ----------------------------------------------------
-// CONTACT & EXPORT DESK PAGE
-// ----------------------------------------------------
-function Contact() {
-  const [form, setForm] = useState({ name: '', company: '', email: '', phone: '', destination: '', message: '' });
-  const [sent, setSent] = useState(false);
+// -----------------------------------------------------------------
+// CONTACT DESK PAGE
+// -----------------------------------------------------------------
+function ContactPage() {
+  const [form, setForm] = useState({ name: '', shop: '', phone: '', area: 'Nagercoil', notes: '' });
+  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.email) return;
-    setSent(true);
+    if (!form.name || !form.phone) return;
+    setSubmitted(true);
   };
 
-  const handleWhatsAppDirect = () => {
+  const handleWhatsApp = () => {
     const text = encodeURIComponent(
-      `Hello Kanyakumari Safety Pins (Tamil Nadu),\n` +
-      `I would like to discuss an order in Rupees (₹):\n` +
-      `• Name: ${form.name || 'Direct Buyer'}\n` +
-      `• Company: ${form.company || 'N/A'}\n` +
-      `• Location: ${form.destination || 'Tamil Nadu / India / Global'}\n` +
-      `• Message: ${form.message || 'Please send catalogue and pricing in Rupees.'}`
+      `*WHOLESALE INQUIRY - KANYAKUMARI SAFETY PINS*\n` +
+      `• Shop: ${form.shop || 'Retail Shop'}\n` +
+      `• Contact: ${form.name}\n` +
+      `• Phone: ${form.phone}\n` +
+      `• Town: ${form.area}\n` +
+      `• Requirement: ${form.notes || 'Please provide wholesale price list.'}`
     );
     window.open(`https://wa.me/919876543210?text=${text}`, '_blank');
   };
 
   return (
-    <div className="mx-auto max-w-[1440px] px-4 md:px-8 py-12 md:py-20">
-      <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12">
+    <div className="mx-auto max-w-[1360px] px-4 sm:px-6 py-10 md:py-16">
+      <div className="grid lg:grid-cols-2 gap-10">
         <div>
-          <SectionLabel>Tamil Nadu Sales & Export Desk</SectionLabel>
-          <h1 className="font-display text-4xl md:text-5xl font-extrabold mt-2 text-foreground">
-            Contact Kanyakumari Mill
+          <span className="eyebrow text-orange-600 font-bold">Wholesale Desk</span>
+          <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1">
+            Contact Kanyakumari Sales
           </h1>
-          <p className="text-sm text-muted-foreground mt-4 leading-relaxed">
-            Our Tamil Nadu sales and international export team provides fast quotes in Rupees (₹) and international currencies. Direct truck delivery to Tirupur, Coimbatore, Chennai, and vessel loading at Tuticorin Port.
+          <p className="text-xs sm:text-sm text-slate-600 mt-3 leading-relaxed">
+            Get in touch with our local wholesale team for shop visits, sample packs, and bulk consignment booking across Kanyakumari District.
           </p>
 
-          <div className="mt-8 space-y-4 text-xs font-mono">
-            <div className="p-4 border border-foreground/15 bg-card rounded-xs flex items-start gap-3">
-              <MapPin className="text-accent shrink-0 mt-0.5" size={18} />
+          <div className="mt-8 space-y-3 font-mono text-xs">
+            <div className="p-4 border border-slate-200 bg-white rounded-lg flex items-start gap-3">
+              <MapPin size={18} className="text-orange-600 shrink-0 mt-0.5" />
               <div>
-                <strong className="block text-foreground text-sm font-sans font-bold">Kanyakumari Manufacturing Plant</strong>
-                <span className="text-muted-foreground">Plot 18-22, Cape Industrial Estate, Nagercoil – Kanyakumari Highway, Kanyakumari District, Tamil Nadu - 629702, India.</span>
+                <strong className="block text-slate-900 font-sans font-bold text-sm">Wholesale Mill & Dispatch Center</strong>
+                <span className="text-slate-500">Cape Industrial Estate, Nagercoil – Kanyakumari Highway, Kanyakumari District - 629702.</span>
               </div>
             </div>
 
-            <div className="p-4 border border-foreground/15 bg-card rounded-xs flex items-start gap-3">
-              <MessageSquare className="text-emerald-600 shrink-0 mt-0.5" size={18} />
+            <div className="p-4 border border-slate-200 bg-white rounded-lg flex items-start gap-3">
+              <Phone size={18} className="text-orange-600 shrink-0 mt-0.5" />
               <div>
-                <strong className="block text-foreground text-sm font-sans font-bold">WhatsApp Direct (+91)</strong>
-                <span className="text-muted-foreground">+91 98765 43210 (Direct Factory Helpline)</span>
+                <strong className="block text-slate-900 font-sans font-bold text-sm">Phone Helpline</strong>
+                <span className="text-slate-500">+91 98765 43210 / +91 4652 245678</span>
               </div>
             </div>
 
-            <div className="p-4 border border-foreground/15 bg-card rounded-xs flex items-start gap-3">
-              <Mail className="text-accent shrink-0 mt-0.5" size={18} />
+            <div className="p-4 border border-slate-200 bg-white rounded-lg flex items-start gap-3">
+              <MessageSquare size={18} className="text-emerald-600 shrink-0 mt-0.5" />
               <div>
-                <strong className="block text-foreground text-sm font-sans font-bold">Email Inquiries</strong>
-                <span className="text-muted-foreground">sales@kanyakumaripins.com / exports@kanyakumaripins.com</span>
-              </div>
-            </div>
-
-            <div className="p-4 border border-foreground/15 bg-card rounded-xs flex items-start gap-3">
-              <Globe className="text-accent shrink-0 mt-0.5" size={18} />
-              <div>
-                <strong className="block text-foreground text-sm font-sans font-bold">Ports & Hubs</strong>
-                <span className="text-muted-foreground">Tuticorin Port (INTUT1) • Cochin Port (INCOK1) • Chennai (INMAA1) • Tirupur Hub</span>
+                <strong className="block text-slate-900 font-sans font-bold text-sm">WhatsApp Orders</strong>
+                <span className="text-slate-500">+91 98765 43210 (Direct Shop Order Desk)</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="border border-foreground/15 bg-card p-6 md:p-10 rounded-xs shadow-xl">
-          {sent ? (
-            <div className="py-12 text-center">
-              <CheckCircle2 size={48} className="text-emerald-500 mx-auto mb-4" />
-              <h3 className="font-display text-2xl font-bold text-foreground">Inquiry Sent Successfully!</h3>
-              <p className="text-xs text-muted-foreground mt-2 max-w-sm mx-auto">
-                Thank you, {form.name}. Our Kanyakumari sales manager will reply with technical data and GST / Proforma rates in Rupees (₹) within 2 business hours.
+        <div className="border border-slate-200 bg-white p-6 sm:p-8 rounded-xl shadow-xs">
+          {submitted ? (
+            <div className="text-center py-8">
+              <CheckCircle2 size={44} className="text-emerald-600 mx-auto mb-3" />
+              <h3 className="font-display text-xl font-bold text-slate-900">Inquiry Logged!</h3>
+              <p className="text-xs text-slate-500 mt-2">
+                Thank you, {form.name}. Our Kanyakumari sales representative will connect with your shop shortly.
               </p>
               <button
                 type="button"
-                onClick={handleWhatsAppDirect}
-                className="mt-6 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 text-xs font-bold uppercase tracking-wider rounded-xs inline-flex items-center gap-2"
+                onClick={handleWhatsApp}
+                className="mt-5 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-md font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2"
               >
                 <MessageSquare size={15} />
                 <span>Chat on WhatsApp</span>
@@ -1308,96 +1216,85 @@ function Contact() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <h3 className="font-display text-xl font-bold text-foreground mb-1">Send Factory Inquiry (Rupees ₹)</h3>
-              <p className="text-xs text-muted-foreground mb-4">Direct mill response within 2 hours</p>
+              <h3 className="font-display text-lg font-bold text-slate-900 border-b border-slate-100 pb-2">
+                Shop Order Inquiry
+              </h3>
 
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block eyebrow text-muted-foreground mb-1">Full Name *</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Your Name *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Murugan / Senthil / Ramesh"
+                    placeholder="e.g. Ramesh"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full border border-foreground/20 bg-background p-2.5 text-xs outline-none focus:border-accent rounded-xs"
+                    className="w-full border border-slate-300 rounded-md p-2.5 text-xs outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
                 <div>
-                  <label className="block eyebrow text-muted-foreground mb-1">Company / Mill Name</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Shop / Business Name</label>
                   <input
                     type="text"
-                    placeholder="e.g. Tirupur Garments / Apex Textiles"
-                    value={form.company}
-                    onChange={(e) => setForm({ ...form, company: e.target.value })}
-                    className="w-full border border-foreground/20 bg-background p-2.5 text-xs outline-none focus:border-accent rounded-xs"
+                    placeholder="e.g. Ramesh Tailors"
+                    value={form.shop}
+                    onChange={(e) => setForm({ ...form, shop: e.target.value })}
+                    className="w-full border border-slate-300 rounded-md p-2.5 text-xs outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block eyebrow text-muted-foreground mb-1">Email Address *</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="buyer@company.com"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="w-full border border-foreground/20 bg-background p-2.5 text-xs outline-none focus:border-accent rounded-xs"
-                  />
-                </div>
-                <div>
-                  <label className="block eyebrow text-muted-foreground mb-1">Phone / WhatsApp *</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Phone / WhatsApp Number *</label>
                   <input
                     type="tel"
                     required
                     placeholder="+91 98765 43210"
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    className="w-full border border-foreground/20 bg-background p-2.5 text-xs outline-none focus:border-accent rounded-xs"
+                    className="w-full border border-slate-300 rounded-md p-2.5 text-xs outline-none focus:ring-2 focus:ring-orange-500"
                   />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Town in Kanyakumari</label>
+                  <select
+                    value={form.area}
+                    onChange={(e) => setForm({ ...form, area: e.target.value })}
+                    className="w-full border border-slate-300 rounded-md p-2.5 text-xs outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    {KANYAKUMARI_AREAS.map((a) => (
+                      <option key={a} value={a}>{a}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
               <div>
-                <label className="block eyebrow text-muted-foreground mb-1">Delivery Destination / City</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Tirupur, Karur, Coimbatore, Chennai, Bangalore, Export via Tuticorin"
-                  value={form.destination}
-                  onChange={(e) => setForm({ ...form, destination: e.target.value })}
-                  className="w-full border border-foreground/20 bg-background p-2.5 text-xs outline-none focus:border-accent rounded-xs"
-                />
-              </div>
-
-              <div>
-                <label className="block eyebrow text-muted-foreground mb-1">Your Requirements / Message *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Order Requirements</label>
                 <textarea
-                  rows={4}
-                  required
-                  placeholder="Please specify safety pin size (#00 to #5), wire gauge, finish (Silver/Golden/Black), ring bunches or boxes, and quantity..."
-                  value={form.message}
-                  onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  className="w-full border border-foreground/20 bg-background p-2.5 text-xs outline-none focus:border-accent rounded-xs"
+                  rows={3}
+                  placeholder="Specify safety pin sizes (#0, #1, #2), pack types, or estimated monthly quantity..."
+                  value={form.notes}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                  className="w-full border border-slate-300 rounded-md p-2.5 text-xs outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
 
               <div className="grid sm:grid-cols-2 gap-3 pt-2">
                 <button
                   type="submit"
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground py-3.5 px-4 font-bold text-xs uppercase tracking-widest rounded-xs flex items-center justify-center gap-2 shadow-md transition-all"
+                  className="bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-md font-bold text-xs uppercase tracking-wider"
                 >
-                  <span>Submit Inquiry</span>
-                  <ArrowRight size={14} />
+                  Submit Inquiry
                 </button>
                 <button
                   type="button"
-                  onClick={handleWhatsAppDirect}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 px-4 font-bold text-xs uppercase tracking-widest rounded-xs flex items-center justify-center gap-2 transition-all"
+                  onClick={handleWhatsApp}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-md font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5"
                 >
                   <MessageSquare size={15} />
-                  <span>Inquire via WhatsApp</span>
+                  <span>Send WhatsApp</span>
                 </button>
               </div>
             </form>
@@ -1408,32 +1305,64 @@ function Contact() {
   );
 }
 
-// ----------------------------------------------------
-// ROUTER & ROOT APP
-// ----------------------------------------------------
+// -----------------------------------------------------------------
+// STICKY MOBILE ORDER BAR
+// -----------------------------------------------------------------
+function StickyMobileOrderBar() {
+  const { itemCount, subtotal, formatPrice, setIsCartOpen } = useCart();
+  if (itemCount === 0) return null;
+
+  return (
+    <div className="fixed bottom-0 inset-x-0 z-40 bg-slate-900 border-t border-slate-800 p-3 sm:hidden shadow-2xl flex items-center justify-between gap-3 animate-in slide-in-from-bottom duration-200">
+      <div className="text-white text-xs font-mono">
+        <div className="font-bold flex items-center gap-1.5">
+          <span className="bg-orange-600 text-white px-1.5 py-0.2 rounded-sm text-[10px]">
+            {itemCount} {itemCount === 1 ? 'Pack' : 'Packs'}
+          </span>
+          <span className="text-orange-400 font-display font-bold text-sm">{formatPrice(subtotal)}</span>
+        </div>
+        <span className="text-[10px] text-slate-400">Wholesale Order</span>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setIsCartOpen(true)}
+        className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 rounded-md font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
+      >
+        <ShoppingBag size={14} />
+        <span>View Order</span>
+      </button>
+    </div>
+  );
+}
+
+function ArrowDown({ size = 16 }: { size?: number }) {
+  return <ChevronDown size={size} />;
+}
+
+// -----------------------------------------------------------------
+// ROOT APP
+// -----------------------------------------------------------------
 function AppRouter() {
   return (
     <ErrorBoundary resetKey={useLocation()[0]}>
-      <SiteShell>
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/products" component={Products} />
-          <Route path="/products/:id" component={ProductDetailPage} />
-          <Route path="/size-chart" component={SizeChartPage} />
-          <Route path="/packaging" component={PackagingPage} />
-          <Route path="/custom-quote" component={() => (
-            <div className="mx-auto max-w-[1440px] px-4 md:px-8 py-12 md:py-20">
-              <CustomPinConfigurator />
-            </div>
-          )} />
-          <Route path="/samples" component={SampleKit} />
-          <Route path="/checkout" component={Checkout} />
-          <Route path="/manufacturing" component={Manufacturing} />
-          <Route path="/quality" component={Quality} />
-          <Route path="/contact" component={Contact} />
-          <Route component={NotFound} />
-        </Switch>
-      </SiteShell>
+      <div className="min-h-screen bg-white text-slate-900 flex flex-col justify-between">
+        <SiteHeader />
+        <CartDrawer />
+        <main className="flex-1">
+          <Switch>
+            <Route path="/" component={WholesaleShopHome} />
+            <Route path="/products" component={ProductsPage} />
+            <Route path="/sizes" component={SizesPage} />
+            <Route path="/delivery" component={DeliveryPage} />
+            <Route path="/for-businesses" component={ForBusinessesPage} />
+            <Route path="/contact" component={ContactPage} />
+            <Route component={NotFound} />
+          </Switch>
+        </main>
+        <StickyMobileOrderBar />
+        <SiteFooter />
+      </div>
     </ErrorBoundary>
   );
 }

@@ -9,21 +9,6 @@ export interface CartItem {
   quantity: number;
 }
 
-export type Currency = 'INR' | 'USD' | 'EUR' | 'GBP';
-
-interface CurrencyRate {
-  symbol: string;
-  rate: number;
-  label: string;
-}
-
-const CURRENCIES: Record<Currency, CurrencyRate> = {
-  INR: { symbol: '₹', rate: 86.5, label: 'INR (₹ Rupee)' },
-  USD: { symbol: '$', rate: 1.0, label: 'USD ($ Dollar)' },
-  EUR: { symbol: '€', rate: 0.92, label: 'EUR (€ Euro)' },
-  GBP: { symbol: '£', rate: 0.79, label: 'GBP (£ Pound)' },
-};
-
 interface CartContextType {
   items: CartItem[];
   addItem: (product: Product, selectedSize: string, selectedPack: PackOption, quantity?: number) => void;
@@ -35,53 +20,32 @@ interface CartContextType {
   subtotal: number;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
-  currency: Currency;
-  setCurrency: (c: Currency) => void;
   formatPrice: (amountInUSD: number) => string;
-  hasSampleKit: boolean;
-  addSampleKit: () => void;
-  removeSampleKit: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const INR_RATE = 86.5;
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
     try {
-      const saved = localStorage.getItem('kanyakumari_cart');
+      const saved = localStorage.getItem('kanyakumari_wholesale_cart');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
     }
   });
 
-  const [hasSampleKit, setHasSampleKit] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('kanyakumari_sample_kit') === 'true';
-    } catch {
-      return false;
-    }
-  });
-
   const [isCartOpen, setIsCartOpen] = useState(false);
-  // Default currency set to INR (Rupees)
-  const [currency, setCurrency] = useState<Currency>('INR');
 
   useEffect(() => {
     try {
-      localStorage.setItem('kanyakumari_cart', JSON.stringify(items));
+      localStorage.setItem('kanyakumari_wholesale_cart', JSON.stringify(items));
     } catch (e) {
       console.error(e);
     }
   }, [items]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('kanyakumari_sample_kit', hasSampleKit ? 'true' : 'false');
-    } catch (e) {
-      console.error(e);
-    }
-  }, [hasSampleKit]);
 
   const addItem = (product: Product, selectedSize: string, selectedPack: PackOption, quantity = 1) => {
     const itemKey = `${product.id}-${selectedSize}-${selectedPack.id}`;
@@ -113,32 +77,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = () => {
     setItems([]);
-    setHasSampleKit(false);
   };
 
-  const addSampleKit = () => {
-    setHasSampleKit(true);
-    setIsCartOpen(true);
-  };
-
-  const removeSampleKit = () => {
-    setHasSampleKit(false);
-  };
-
-  const itemCount = items.reduce((acc, item) => acc + item.quantity, 0) + (hasSampleKit ? 1 : 0);
+  const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const totalPieces = items.reduce((acc, item) => acc + item.selectedPack.count * item.quantity, 0);
   const subtotal = items.reduce((acc, item) => acc + item.selectedPack.price * item.quantity, 0);
 
   const formatPrice = (amountInUSD: number): string => {
-    const cur = CURRENCIES[currency];
-    const converted = amountInUSD * cur.rate;
-    if (currency === 'INR') {
-      if (converted < 10) {
-        return `₹${converted.toFixed(2)}`;
-      }
-      return `₹${Math.round(converted).toLocaleString('en-IN')}`;
+    const inrAmount = amountInUSD * INR_RATE;
+    if (inrAmount < 10) {
+      return `₹${inrAmount.toFixed(2)}`;
     }
-    return `${cur.symbol}${converted.toFixed(2)}`;
+    return `₹${Math.round(inrAmount).toLocaleString('en-IN')}`;
   };
 
   return (
@@ -154,12 +104,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         subtotal,
         isCartOpen,
         setIsCartOpen,
-        currency,
-        setCurrency,
         formatPrice,
-        hasSampleKit,
-        addSampleKit,
-        removeSampleKit,
       }}
     >
       {children}

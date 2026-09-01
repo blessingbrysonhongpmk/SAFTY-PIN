@@ -1,25 +1,43 @@
-# Bharat Safety Pins India — Manufacturer & Global Exporter Website
+# Kanyakumari Safety Pins — B2B Wholesale Ordering Platform
 
-A high-performance, lightweight, and professional B2B portal for an **Indian Safety Pin Manufacturer & Global Exporter**.
+A modern, fast, and frictionless local B2B wholesale ordering platform for **Kanyakumari Safety Pins** — delivering across Nagercoil, Marthandam, Thuckalay, Colachel, and the entire Kanyakumari district, Tamil Nadu.
 
 ---
 
-## 🚀 Vercel Deployment Settings
+## ⚡ Core Ordering Experience
 
-This project is built with **Vite + React + TypeScript** and deploys directly to Vercel as a static Single Page Application (SPA).
+Designed for local retail shops, tailors, garment units, and textile businesses:
+- **Fast 4-Step Quick Wholesale Order**: Choose Pin → Select Size → Choose Pack Quantity → Add to Order
+- **Persistent Order Drawer**: Review items, adjust pack counts, and submit shop details in 10 seconds
+- **Local Kanyakumari District Delivery**: Direct delivery to Nagercoil, Marthandam, Thuckalay, Colachel, Karungal, Kuzhithurai, Suchindram, Aralvaimozhi, Padmanabhapuram, Kaliyakkavilai, Kulasekharam, Monday Market, and surrounding areas
+- **Direct WhatsApp Order Integration**: Instant 1-click order submission to local dispatch (+91 98765 43210)
+
+---
+
+## 📦 Wholesale Product Line
+
+1. **Standard Steel Safety Pins (Mirror Nickel Plated)** — Sizes #000 to #5 (19mm to 65mm)
+2. **Pure Brass Golden Safety Pins** — 100% Rustproof for coastal humidity & silk sarees
+3. **Bunched Ring Packs on Master Safety Pin** — 12 / 24 pins per ring bunch for fast garment tagging
+4. **Pear / Bulb / Gourd Hangtag Pins** — Teardrop shape for apparel price tickets
+5. **Tailor Combo Assorted Boxes** — 5 essential sizes combo for tailoring shops
+6. **Heavy-Duty Industrial Laundry Pins** — Extra-gauge pins for commercial wash bags & canvas
+
+---
+
+## 🚀 Vercel Deployment
+
+This project is built with **Vite + React + TypeScript** and deploys as a static Single Page Application (SPA).
 
 | Setting | Value |
 |---|---|
 | **Framework Preset** | `Vite` |
-| **Root Directory** | `./` (or leave default root) |
-| **Build Command** | `npm run build` (or `vite build`) |
+| **Build Command** | `pnpm run build` (or `npm run build`) |
 | **Output Directory** | `dist` |
-| **Install Command** | `npm install` |
-| **Node Version** | `18.x` or `20.x` |
+| **Install Command** | `pnpm install` |
 
-### Single-Page App Routing (`vercel.json`)
-The included `vercel.json` ensures all client-side routes (`/products`, `/size-chart`, `/custom-quote`, `/packaging`, `/samples`, `/contact`) resolve properly without 404s on direct URL refresh:
-
+### Client Routing (`vercel.json`)
+The included `vercel.json` provides client-side SPA routing:
 ```json
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
@@ -34,46 +52,18 @@ The included `vercel.json` ensures all client-side routes (`/products`, `/size-c
 
 ---
 
-## 🛠️ Local Development & Build
+## 🛠️ Local Development
 
 ```bash
-# 1. Install dependencies
-npm install
+# Install dependencies
+pnpm install
 
-# 2. Start development server
-npm run dev
+# Run dev server
+pnpm run dev
 
-# 3. Production build verification (0 errors)
-npm run build
+# Run production build
+pnpm run build
 
-# 4. Typecheck validation
-npm run typecheck
+# Run typecheck
+pnpm run typecheck
 ```
-
----
-
-## 🌟 Key Features
-
-1. **Standard Indian Safety Pin Range**:
-   - Standard Cold-Drawn Steel (Mirror Nickel Plated)
-   - Pure Solid Cartridge Brass (100% Rustproof Golden Finish)
-   - Bunched Master Ring Pin Packs (12/24 pins on master pin for garment factory lines)
-   - Pear / Gourd / Bulb Hangtag Pins (Teardrop shape for luxury fashion labels)
-   - Coil-less Anti-Snag Silk & Knitwear Safety Pins
-   - Heavy-Duty Industrial Laundry & Kilt Pins (up to 102mm / 4-inch)
-   - Marine & Surgical 316 Stainless Steel Pins
-
-2. **Indian Standard Size Chart**:
-   - Full matrix from Size `#000` (19mm) up to Size `#6` (75mm), including SWG wire gauges, length in inches/mm, and pieces per kg.
-
-3. **Instant RFQ & Bulk Export Estimator**:
-   - Calculates carton counts, gross weights (kg), volume discounts, and generates 1-click WhatsApp quote messages (+91 direct factory desk).
-
-4. **Multi-Currency Live Switcher**:
-   - Real-time conversion across **INR (₹)**, **USD ($)**, **EUR (€)**, and **GBP (£)**.
-
-5. **Sample Box Order System**:
-   - Simple request form for international & domestic buyers to order free 12-size evaluation kits.
-
-6. **100% Client-Side Architecture**:
-   - Zero server dependencies, zero database requirements, zero cold starts, and maximum Vercel speed.

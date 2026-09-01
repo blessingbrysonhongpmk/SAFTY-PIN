@@ -9,17 +9,19 @@ export interface CartItem {
   quantity: number;
 }
 
-export type Currency = 'USD' | 'EUR' | 'GBP';
+export type Currency = 'INR' | 'USD' | 'EUR' | 'GBP';
 
 interface CurrencyRate {
   symbol: string;
   rate: number;
+  label: string;
 }
 
 const CURRENCIES: Record<Currency, CurrencyRate> = {
-  USD: { symbol: '$', rate: 1.0 },
-  EUR: { symbol: '€', rate: 0.92 },
-  GBP: { symbol: '£', rate: 0.79 },
+  INR: { symbol: '₹', rate: 86.5, label: 'INR (₹ Rupee)' },
+  USD: { symbol: '$', rate: 1.0, label: 'USD ($ Dollar)' },
+  EUR: { symbol: '€', rate: 0.92, label: 'EUR (€ Euro)' },
+  GBP: { symbol: '£', rate: 0.79, label: 'GBP (£ Pound)' },
 };
 
 interface CartContextType {
@@ -46,7 +48,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
     try {
-      const saved = localStorage.getItem('holdfast_cart');
+      const saved = localStorage.getItem('kanyakumari_cart');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -55,18 +57,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const [hasSampleKit, setHasSampleKit] = useState<boolean>(() => {
     try {
-      return localStorage.getItem('holdfast_sample_kit') === 'true';
+      return localStorage.getItem('kanyakumari_sample_kit') === 'true';
     } catch {
       return false;
     }
   });
 
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [currency, setCurrency] = useState<Currency>('USD');
+  // Default currency set to INR (Rupees)
+  const [currency, setCurrency] = useState<Currency>('INR');
 
   useEffect(() => {
     try {
-      localStorage.setItem('holdfast_cart', JSON.stringify(items));
+      localStorage.setItem('kanyakumari_cart', JSON.stringify(items));
     } catch (e) {
       console.error(e);
     }
@@ -74,7 +77,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      localStorage.setItem('holdfast_sample_kit', hasSampleKit ? 'true' : 'false');
+      localStorage.setItem('kanyakumari_sample_kit', hasSampleKit ? 'true' : 'false');
     } catch (e) {
       console.error(e);
     }
@@ -129,6 +132,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const formatPrice = (amountInUSD: number): string => {
     const cur = CURRENCIES[currency];
     const converted = amountInUSD * cur.rate;
+    if (currency === 'INR') {
+      if (converted < 10) {
+        return `₹${converted.toFixed(2)}`;
+      }
+      return `₹${Math.round(converted).toLocaleString('en-IN')}`;
+    }
     return `${cur.symbol}${converted.toFixed(2)}`;
   };
 
